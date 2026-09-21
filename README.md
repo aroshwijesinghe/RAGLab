@@ -9,7 +9,7 @@
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-Extension-blue?logo=visualstudiocode)](https://github.com/aroshwijesinghe/RAGLab)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Local First](https://img.shields.io/badge/Security-100%25%20Local-success)](#security--privacy)
+[![Local First](https://img.shields.io/badge/Security-100%25%20Local-success)](#security-and-privacy)
 
 ---
 
@@ -32,11 +32,12 @@
 - [Interactive GUI Feature Tour](#interactive-gui-feature-tour)
 - [Feature Usage Guide](#feature-usage-guide)
   - [1. Launching RAGLaB Studio](#1-launching-raglab-studio)
-  - [2. Document Inspector](#2-document-inspector)
+  - [2. Document Inspector and Supported Text Formats](#2-document-inspector-and-supported-text-formats)
   - [3. Chunking Studio and Visualizer](#3-chunking-studio-and-visualizer)
-  - [4. Local Retrieval Simulator and Headroom Gauge](#4-local-retrieval-simulator-and-headroom-gauge)
-  - [5. Workspace Technology Scanner](#5-workspace-technology-scanner)
-  - [6. Activity Bar Sidebar](#6-activity-bar-sidebar)
+  - [4. Document Partition Minimap](#4-document-partition-minimap)
+  - [5. Local Retrieval Simulator and Headroom Gauge](#5-local-retrieval-simulator-and-headroom-gauge)
+  - [6. Workspace Technology Scanner](#6-workspace-technology-scanner)
+  - [7. Activity Bar Sidebar](#7-activity-bar-sidebar)
 - [Available Commands](#available-commands)
 - [Configuration Settings](#configuration-settings)
 - [Chunking Strategy and Engineering Guide](#chunking-strategy-and-engineering-guide)
@@ -54,10 +55,14 @@
 
 - **Complete Graphical User Interface (GUI)**: Profile document metrics, slide chunk parameters, navigate partitions, and audit repository dependencies through an integrated visual workbench.
 - **Privacy First and Fully Local**: Zero network requests, zero telemetry, and zero third-party API dependencies. Every computation runs locally on your workstation.
+- **Text-Native Determinism**: Focuses strictly on UTF-8 text formats (`.md`, `.txt`, `.json`, `.csv`) and direct scratchpad input for deterministic character boundaries and zero binary extraction corruption.
 - **Hierarchical Boundary-Aware Chunking**: Intelligently segments prose along paragraph (`\n\n`), sentence (`. ! ?`), and word boundaries. Words and semantic clauses remain intact.
-- **Interactive Visualizer and In-Place Search**: Step through chunks sequentially with arrow keys, jump to arbitrary indices, and perform instant full-text searches with highlighted matches.
+- **Interactive Partition Minimap**: Visual document minimap strip above the chunk explorer featuring interactive segment jumping, glowing active states, and atomic block indicators.
+- **Dual-Tier LLM Context Headroom Gauge**: Simulates prompt payload against 4K (4,096 tokens) and 8K (8,192 tokens) context limits with color-coded safety tiers.
+- **Interactive Visualizer and In-Place Search**: Step through chunks sequentially with arrow keys, jump to arbitrary indices, and perform instant full-text searches with highlighted matches (debounced at 120ms).
 - **RAG Stack Dependency Scanner**: Audits project dependency manifests (`requirements.txt`, `package.json`, `pyproject.toml`) and directory layouts to report vector databases, embedding engines, and RAG folders.
-- **Lightweight Footprint**: Constructed with vanilla TypeScript and native editor design tokens. The packaged extension distribution is under 100 KB.
+- **Lightweight Footprint**: Constructed with vanilla TypeScript and native editor design tokens. The compiled extension bundle is approximately 160 KB and the packaged VSIX is under 900 KB.
+- **Zero Emojis**: Clean, professional typography and iconography throughout the interface and documentation.
 
 ---
 
@@ -65,10 +70,12 @@
 
 | Tab / View | Capabilities and Visual Elements |
 |---|---|
-| **Document Inspector** | Load content via file picker, active editor tab, sample data, or custom scratchpad. Visual metric cards for Characters, Words, Lines, Empty Lines, and Lexical Density. Token estimation heuristic (~words x 1.3). Real-time formatting warnings and direct dispatch to the chunking workbench. |
+| **Document Inspector** | Load content via drag-and-drop zone, file picker, active editor tab, sample data, or custom scratchpad. Visual metric cards for Characters, Words, Lines, Empty Lines, and Lexical Density. Token estimation heuristic (~words x 1.3). Real-time formatting warnings and direct dispatch to the chunking workbench. |
 | **Chunking Studio** | Dynamic architecture strategy selector: **Parent-Document (Small-to-Big)** for maximum accuracy, **Markdown & Structural Hierarchy** for AST table/code preservation, and **Recursive Boundary-Aware**. Interactive sliders and steppers for Chunk Size (50-3,000), Overlap (0-500), and Parent Context Size (600-4,000). Quick presets for Factoid (250/25), Standard RAG (500/50), and Deep Context (1,000/100). Live parameter validation and direct JSON export to disk. |
+| **Document Partition Minimap** | Interactive segment strip positioned directly above the chunk visualizer. Visualizes chunk proportion, highlights the active chunk, marks atomic tables and code blocks with green top borders, and supports instant click-to-jump. |
 | **Chunk Explorer** | Sequential navigation controls (`Previous`, `Next`, index input, and left/right keyboard arrows). Dual-mode toggle for Parent-Document strategy: inspect the **Child Search Unit** or the expanded **Parent LLM Context** with the child highlighted inside it. Breadcrumb hierarchy tags and atomic block badges (`Table Preserved`, `Code Block Preserved`). In-place search with marked keyword matches. Chunk utilization progress bar and context continuity indicators. |
-| **Local Retrieval Simulator** | Top-K similarity engine running TF-IDF scoring across in-memory chunks. Enter natural-language queries to inspect the Top-3 matching chunks with relevance percentages. In Parent-Document mode, inspects both child match score and expanded parent context token footprint. LLM Context Headroom Gauge tracking combined token load and percent consumption of 4K and 8K context windows. |
+| **Local Retrieval Simulator** | Top-K similarity engine running TF-IDF scoring across in-memory chunks. Enter natural-language queries to inspect the Top-3 matching chunks with relevance percentages. In Parent-Document mode, inspects both child match score and expanded parent context token footprint. |
+| **LLM Context Headroom Gauge** | Dynamic prompt budget monitor tracking combined token load and percent consumption against both 4K (4,096 tokens) and 8K (8,192 tokens) context windows with three-tier safety coloration (Green, Amber, Crimson). |
 | **Workspace Scanner** | Automatic scan of project manifests (`requirements.txt`, `package.json`, `pyproject.toml`). RAG readiness indicator with status pill. Category filters for Vector Databases, Embeddings, Orchestration, and Web Frameworks. Detected folder map (`documents/`, `embeddings/`, etc.) and formatted text report export. |
 | **Guidelines Tab** | Visual architectural ASCII diagram, chunk sizing decision matrix, overlap engineering formulas, and direct navigation to the comprehensive user handbook. |
 
@@ -85,11 +92,11 @@ RAGLaB can be opened through three convenient entry points:
 
 ---
 
-### 2. Document Inspector
+### 2. Document Inspector and Supported Text Formats
 
 1. Open the **Document Inspector** tab in RAGLaB Studio.
 2. Select your preferred text input source:
-   - **Interactive Drop Zone**: Drag and drop any `.md`, `.txt`, `.json`, or `.csv` file directly onto the upload target.
+   - **Interactive Drop Zone**: Drag and drop any `.md`, `.txt`, `.json`, or `.csv` file directly onto the upload target. Files are read instantaneously in memory via standard UTF-8 stream readers.
    - **Select File from Disk**: Opens a native file dialog to choose any `.md`, `.txt`, `.json`, or `.csv` file.
    - **Load Active File**: Reads content directly from the file currently open in your editor.
    - **Load Sample Document**: Populates the inspector with a pre-configured technical document on RAG architectures for immediate testing.
@@ -100,7 +107,7 @@ RAGLaB can be opened through three convenient entry points:
    - **Estimated Tokens**: Word-based heuristic calculated as `~words x 1.3`.
    - **Lines and Blank Lines**: Total line count alongside empty line distribution.
    - **Average Words per Line**: Measure of textual density.
-4. If formatting issues are detected (e.g. excessive empty lines), a notification banner highlights recommendations.
+4. If formatting anomalies are detected (such as excessive blank lines), a notification banner highlights recommendations.
 5. Click **Send to Chunking Studio** to transfer the parsed text directly into the chunking workbench.
 
 ---
@@ -127,12 +134,24 @@ RAGLaB can be opened through three convenient entry points:
    - In Parent-Document mode, toggle between **Child Search Unit** (the exact vector search slice) and **Parent LLM Context** (the full context block with the child slice highlighted).
    - In Markdown mode, review the **Hierarchy Breadcrumb** pill and atomic preservation badges.
    - Use **Previous** and **Next** buttons or keyboard arrow keys (`Left` / `Right`) to browse segments sequentially.
-   - Enter terms into the search bar to highlight occurrences in yellow and view matching chunk totals.
+   - Enter terms into the search bar (debounced at 120ms) to highlight occurrences in yellow and view matching chunk totals.
    - Use **Copy Chunk** for the active segment, **Copy All Chunks** for a concatenated overview, or **Save to File (.json)** to write the dataset directly to your workspace.
 
 ---
 
-### 4. Local Retrieval Simulator and Headroom Gauge
+### 4. Document Partition Minimap
+
+Positioned directly above the Chunk Visualizer box, the **Document Partition Minimap Strip** offers a high-density, interactive visual index of every chunk across the document:
+
+- **Proportional Representation**: Each chunk is rendered as an interactive horizontal segment sized proportionally across the document track.
+- **Active State Glow**: The active chunk segment scales dynamically and illuminates with a glowing blue border.
+- **Atomic Block Indicators**: Segments representing atomic Markdown tables or fenced code blocks display a bright green top border.
+- **Instant Click-to-Jump**: Clicking any segment in the minimap immediately jumps to that chunk in the viewer.
+- **Smooth Auto-Scroll Synchronization**: Moving through chunks via arrow keys or navigation buttons smoothly scrolls the active minimap segment into view.
+
+---
+
+### 5. Local Retrieval Simulator and Headroom Gauge
 
 Located beneath the chunk preview in the Chunking Studio:
 1. Enter a natural language query (for example: *"How does vector chunking preserve context?"*).
@@ -143,10 +162,11 @@ Located beneath the chunk preview in the Chunking Studio:
 6. Review the **LLM Context Headroom Gauge**:
    - Calculates the collective token footprint of retrieved chunks (or unique parent context blocks).
    - Displays percentage consumption against standard 4K and 8K context windows, ensuring prompt templates and system directives have ample headroom.
+   - Color shifts dynamically: Green (<40%), Amber (40%–75%), and Crimson (>75%).
 
 ---
 
-### 5. Workspace Technology Scanner
+### 6. Workspace Technology Scanner
 
 1. Open the **Workspace Scanner** tab.
 2. Click **Scan Workspace**.
@@ -161,7 +181,7 @@ Located beneath the chunk preview in the Chunking Studio:
 
 ---
 
-### 6. Activity Bar Sidebar
+### 7. Activity Bar Sidebar
 
 The RAGLaB Sidebar lives in the primary Activity Bar:
 - **Launch Visual Workbench**: Opens the full multi-tab studio.
@@ -268,6 +288,7 @@ RAGLaB accepts text-native document formats for maximum tokenization accuracy an
 | **Plain Text** | `.txt` | Unstructured source notes, logs, customer transcripts, raw documents |
 | **Structured JSON** | `.json` | Chat logs, structured conversational exports, entity dumps, knowledge bases |
 | **Tabular CSV** | `.csv` | Tabular datasets, catalog inventories, tabular rows |
+| **Direct Scratchpad Input** | *Direct Paste* | Ad-hoc text verification, token experimentation, and prompt simulation |
 
 ---
 
@@ -325,7 +346,7 @@ npm install
 # Compile TypeScript bundle
 npm run compile
 
-# Run automated unit test suite (52 tests)
+# Run automated unit test suite (57 tests)
 npm test
 
 # Package VSIX distribution bundle
@@ -342,10 +363,14 @@ Press `F5` in VS Code to start the Extension Development Host and debug live.
   - Document profiling with character, word, line, and token metrics.
   - Smart boundary-aware chunk partitioning with sliding overlap.
   - Interactive multi-tab RAGLaB Studio webview with official branding.
-  - Real-time full-text search with marked match highlights.
+  - Interactive Document Partition Minimap Strip.
+  - Dual-Tier 4K & 8K LLM Context Headroom Gauge.
+  - Real-time full-text search with marked match highlights (debounced at 120ms).
   - Workspace technology scanner and folder audit.
   - Activity Bar sidebar view with immediate launch controls.
-  - Local TF-IDF retrieval simulator and LLM context headroom gauge.
+  - Local TF-IDF retrieval simulator.
+  - Micro-animations and tactile copy feedback.
+  - Clean text-native focus (`.md`, `.txt`, `.json`, `.csv`).
 - [ ] **V0.2 (Upcoming)**:
   - Local ONNX-powered vector embedding generation.
   - Cosine similarity matrix between adjacent chunks.

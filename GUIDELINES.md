@@ -4,22 +4,24 @@
 
 # RAGLaB User Guidelines and Engineering Handbook
 
-Welcome to **RAGLaB** — the interactive GUI studio designed for engineers, researchers, and developers constructing and tuning **Retrieval-Augmented Generation (RAG)** systems.
+Welcome to **RAGLaB** — the interactive GUI studio designed for engineers, researchers, and developers constructing, inspecting, and fine-tuning **Retrieval-Augmented Generation (RAG)** pipelines.
 
-This handbook details how to operate every capability of RAGLaB directly through the **Graphical User Interface (GUI)** without requiring command-line commands, external backend daemons, or cloud API keys.
+This handbook details how to operate every capability of RAGLaB directly through the **Graphical User Interface (GUI)** without requiring command-line scripts, external backend daemons, or cloud API keys.
 
 ---
 
 ## Table of Contents
 
 1. [Quick Start: Opening the Workbench](#1-quick-start-opening-the-workbench)
-2. [Document Inspector Guide](#2-document-inspector-guide)
+2. [Document Inspector and Supported Text Formats](#2-document-inspector-and-supported-text-formats)
 3. [Chunking Studio and Visualizer Guide](#3-chunking-studio-and-visualizer-guide)
-4. [Local Retrieval Simulator and Headroom Guide](#4-local-retrieval-simulator-and-headroom-guide)
-5. [Workspace Technology Scanner Guide](#5-workspace-technology-scanner-guide)
-6. [Sidebar Controller](#6-sidebar-controller)
-7. [Chunking Engineering Principles](#7-chunking-engineering-principles)
-8. [Diagnostic Warnings and Troubleshooting](#8-diagnostic-warnings-and-troubleshooting)
+4. [Document Partition Minimap](#4-document-partition-minimap)
+5. [Local Retrieval Simulator and Headroom Gauge](#5-local-retrieval-simulator-and-headroom-gauge)
+6. [Workspace Technology Scanner](#6-workspace-technology-scanner)
+7. [Sidebar Controller](#7-sidebar-controller)
+8. [Chunking Engineering Principles](#8-chunking-engineering-principles)
+9. [Diagnostic Warnings and Troubleshooting](#9-diagnostic-warnings-and-troubleshooting)
+10. [UI Micro-Interactions and Accessibility](#10-ui-micro-interactions-and-accessibility)
 
 ---
 
@@ -28,7 +30,7 @@ This handbook details how to operate every capability of RAGLaB directly through
 RAGLaB Studio can be accessed through three entry points:
 
 ### Option A: From the Activity Bar
-1. Click the beaker icon on the left VS Code Activity Bar labeled **RAGLaB**.
+1. Click the beaker icon on the left Activity Bar labeled **RAGLaB**.
 2. Click **Launch Visual Workbench**.
 
 ### Option B: From the Command Palette
@@ -36,32 +38,36 @@ RAGLaB Studio can be accessed through three entry points:
 2. Type `RAGLaB` and choose **RAGLaB: Open Studio Dashboard**.
 
 ### Option C: Right-Click in the Editor or Explorer
-1. Right-click any `.md`, `.txt`, `.json`, or `.csv` file.
+1. Right-click any supported text file (`.md`, `.txt`, `.json`, or `.csv`).
 2. Select **RAGLaB: Analyze Document** or **RAGLaB: Create Chunks**.
 
 ---
 
-## 2. Document Inspector Guide
+## 2. Document Inspector and Supported Text Formats
 
-The **Document Inspector** parses text documents to calculate character count, word density, line distribution, and estimated token usage.
+The **Document Inspector** parses source text to calculate character count, word density, line distribution, and estimated token usage.
 
 ### Supported Document Formats
-RAGLaB accepts text-native documents:
-- **Markdown (`.md`, `.markdown`)**: Ideal for documentation with headings, code blocks, and tables.
-- **Plain Text (`.txt`)**: Clean unstructured text, transcripts, and notes.
-- **Structured JSON (`.json`)**: Configs, schemas, records, and datasets.
-- **Tabular Data (`.csv`)**: Row-and-column data and tabular summaries.
-- **Direct Scratchpad Input**: Paste any text directly into the inspector.
+RAGLaB exclusively accepts text-native documents for deterministic character slicing and zero binary decoding distortion:
 
-Text-native formats are the industry best practice for RAG chunking because they preserve exact character boundaries without binary font extraction distortion.
+| Format | Extension | Processing Capabilities |
+| :--- | :--- | :--- |
+| **Markdown** | `.md`, `.markdown` | Full AST boundary detection, header preserving, code blocks, and table atomicity |
+| **Plain Text** | `.txt` | Multi-tiered sentence boundary and paragraph splitting with token sliding window |
+| **Structured JSON** | `.json` | Structured object hierarchy, schema keys, and record-level boundary preservation |
+| **Tabular CSV** | `.csv` | Tabular row-level data and record chunking |
+| **Direct Scratchpad Input** | *Direct Paste* | Instant ad-hoc chunking, token estimation, and retrieval simulation |
+
+> **Why Text-Native Formats?**
+> Binary formats (such as PDF or DOCX) rely on complex positioning streams and font-glyph coordinate maps. Slicing extracted binary text frequently introduces hyphenation artifacts, merged columns, and lost whitespace. Text-native formats provide exact UTF-8 character offsets, preserving deterministic boundaries for embedding models.
 
 ### How to Use the Interface:
 1. Open the **Document Inspector** tab inside RAGLaB Studio.
 2. Load content using any of the input methods:
-   - **Drop Zone**: Drag and drop any `.md`, `.txt`, `.json`, or `.csv` file directly into the drop zone.
-   - **Select File from Disk**: Select any supported text file from your filesystem.
-   - **Load Active File**: Imports text directly from whichever tab is currently open in your editor.
-   - **Load Sample Document**: Instantly loads a comprehensive technical guide on RAG concepts for rapid experimentation without local files.
+   - **Interactive Drop Zone**: Drag and drop any `.md`, `.txt`, `.json`, or `.csv` file directly onto the upload target. Files are read instantaneously in memory using standard UTF-8 stream readers.
+   - **Select File from Disk**: Select any supported text file from your workspace or local filesystem.
+   - **Load Active File**: Imports text directly from whichever editor tab is currently open.
+   - **Load Sample Document**: Instantly loads a comprehensive technical guide on RAG architectures for rapid experimentation without local files.
    - **Scratchpad**: Type or paste arbitrary text into the textarea and click **Analyze Text**.
 3. Review key document metrics:
    - **Characters**: Total raw characters in the source.
@@ -69,8 +75,8 @@ Text-native formats are the industry best practice for RAG chunking because they
    - **Estimated Tokens**: BPE token heuristic (`~words x 1.3`).
    - **Lines and Blank Lines**: Total line count alongside empty line distribution.
    - **Average Words per Line**: Text density metric.
-4. If excessive empty lines or unusual formatting are detected, a warning banner will appear.
-5. Click **Send to Chunking Studio** to pass the active content straight into the chunking workbench.
+4. If excessive empty lines or irregular formatting are detected, a warning banner will appear with recommendations.
+5. Click **Send to Chunking Studio** to transfer the parsed text directly into the chunking workbench.
 
 ---
 
@@ -80,12 +86,12 @@ The **Chunking Studio** divides source text into semantically cohesive partition
 
 ### Architecture Strategies in the GUI:
 1. **Parent-Document (Small-to-Big) [Highest Accuracy]**:
-   - Generates compact Child Search Units (250–300 chars) for high-precision vector similarity matching.
+   - Generates compact Child Search Units (250–300 chars) for high-precision vector similarity matching without embedding dilution.
    - Generates large Parent Context Units (1,200–1,500 chars) that are fed into the LLM prompt.
-   - Completely eliminates vector dilution while ensuring the model has full surrounding context.
+   - Resolves the tension between vector search precision and LLM context completeness.
 2. **Markdown & Structural Hierarchy [AST Integrity]**:
-   - Treats Markdown tables and fenced code blocks as unbroken atomic units (never sliced across borders).
-   - Generates hierarchical breadcrumbs (`[Document > Section > Subsection]`) so isolated chunks retain their structural context.
+   - Treats Markdown tables and fenced code blocks as unbroken atomic units (never severed across chunk boundaries).
+   - Generates hierarchical breadcrumbs (`[Document > Section > Subsection]`) so isolated chunks retain their structural provenance.
 3. **Recursive Boundary-Aware [Balanced]**:
    - Splits text sequentially along paragraph (`\n\n`), sentence (`. ! ?`), and word boundaries.
 
@@ -97,23 +103,23 @@ The **Chunking Studio** divides source text into semantically cohesive partition
    - **Standard RAG (500 / 50)**: Balanced segments for general technical documentation.
    - **Deep Context (1000 / 100)**: Broad segments for narrative prose and summaries.
    - When in Parent-Document mode, customize **Parent Context Size** (default: 1,200 chars).
-4. **Live Validation**: The interface validates your parameters in real time. Alerts will flag if overlap equals or exceeds chunk size, or if parent size is smaller than child size.
+4. **Live Validation**: The interface validates parameters in real time. Alerts will flag if overlap equals or exceeds chunk size, or if parent size is smaller than child size.
 5. Click **Generate Chunks**.
 
 ### Navigating and Inspecting Chunks:
 - **Parent-Document Dual View**:
-  - In Parent-Document mode, click **Child Search Unit** to inspect the exact vector search unit, or click **Parent LLM Context** to inspect the full context block with the child unit highlighted inside it.
+  - In Parent-Document mode, click **Child Search Unit** to inspect the vector search slice, or click **Parent LLM Context** to inspect the full surrounding context with the child unit highlighted inside it.
 - **Hierarchy & Structural Badges**:
-  - Review the active heading breadcrumb trail (e.g. `System > Database > PostgreSQL Config`) and atomic block badges (`Preserved Table`, `Preserved Code Block`).
+  - Review the active heading breadcrumb trail (for example, `Architecture > Vector Store > Indexing`) and atomic block badges (`Table Preserved`, `Code Block Preserved`).
 - **Navigation Controls**:
   - Click **Previous** and **Next** or use the left and right keyboard arrow keys to step through segments.
   - Enter a number into the `Chunk [ X ] of [ Total ]` field to jump directly to any chunk.
-- **Search and In-Place Highlighting**:
+- **In-Place Search (Debounced 120ms)**:
   - Type terms into the search bar.
   - Matches are highlighted in yellow inside the chunk text in real time.
   - The match counter reports how many chunks contain the query.
 - **Metrics**:
-  - Every chunk displays its exact character count, word count, estimated token footprint, and source character offsets.
+  - Every chunk displays its character count, word count, estimated token footprint, and source character offsets.
   - The **Chunk Utilization Progress Bar** visualizes length relative to the target size.
 - **Exporting**:
   - Click **Copy Chunk** to copy the displayed segment to the clipboard.
@@ -123,9 +129,21 @@ The **Chunking Studio** divides source text into semantically cohesive partition
 
 ---
 
-## 4. Local Retrieval Simulator and Headroom Guide
+## 4. Document Partition Minimap
 
-Located directly beneath the chunk viewer in the Chunking Studio, the **Retrieval Simulator** lets you test retrieval viability before publishing to a vector database.
+Positioned directly above the Chunk Visualizer box, the **Document Partition Minimap Strip** offers a high-density, interactive visual index of every chunk across the document:
+
+- **Segment Representation**: Each chunk is rendered as an interactive horizontal segment sized proportionally across the document track.
+- **Active State Feedback**: The active chunk segment scales dynamically and illuminates with a glowing blue border.
+- **Atomic Block Indicators**: Segments representing atomic Markdown tables or fenced code blocks display a bright green top border (`.minimap-seg.atomic`).
+- **Instant Click-to-Jump**: Clicking any segment in the minimap immediately jumps to that chunk in the viewer.
+- **Smooth Auto-Scroll Synchronization**: Moving through chunks via arrow keys or navigation buttons smoothly scrolls the active minimap segment into view.
+
+---
+
+## 5. Local Retrieval Simulator and Headroom Guide
+
+Located directly beneath the chunk visualizer in the Chunking Studio, the **Retrieval Simulator** evaluates retrieval viability before publishing to an external vector database.
 
 ### How to Use the Simulator:
 1. Enter a realistic user prompt or question (for example: *"Why is sentence boundary preservation critical for vector search?"*).
@@ -133,13 +151,19 @@ Located directly beneath the chunk viewer in the Chunking Studio, the **Retrieva
 3. The internal TF-IDF scoring engine evaluates all chunks and displays the **Top-3 Ranked Matches** with relevance score percentages.
 4. When Parent-Document mode is active, each card displays the matching child score alongside the **Parent Context token size**.
 5. **Click any ranked card** to jump directly to that chunk in the explorer with query terms highlighted.
-6. **LLM Context Headroom Gauge**:
-   - Displays the cumulative token count of the retrieved chunks (or unique parent context blocks).
-   - Calculates the percentage footprint against standard 4K and 8K context windows so you can ensure your prompt templates and system instructions have sufficient space.
+
+### Dual-Tier LLM Context Headroom Gauge:
+Directly below the simulator results, the headroom gauge monitors cumulative token load:
+- **Cumulative Token Footprint**: Sums the token footprint of all retrieved chunks (or unique parent context blocks in Parent-Document mode).
+- **Dual Budget Tracking**: Simultaneously calculates percentage utilization for both **4K (4,096 tokens)** and **8K (8,192 tokens)** context windows.
+- **Dynamic Color Indicators**:
+  - **Green (<40%)**: Safe context headroom. Ample room remains for system instructions, conversation history, and model generation.
+  - **Amber / Yellow (40%–75%)**: Moderate context utilization. Monitor prompt overhead.
+  - **Crimson / Red (>75%)**: High-risk context saturation. Chunks risk exceeding prompt limits or causing output truncation.
 
 ---
 
-## 5. Workspace Technology Scanner Guide
+## 6. Workspace Technology Scanner
 
 The **Workspace Scanner** audits your repository to discover RAG libraries, vector databases, embedding frameworks, and ingestion directories.
 
@@ -149,14 +173,14 @@ The **Workspace Scanner** audits your repository to discover RAG libraries, vect
 3. Review your RAG architecture summary:
    - **Readiness Pill**: Indicates `[Active]` when vector stores, embedding models, or orchestrators are found, or `[Standard Project]` when none are detected.
    - **Category Filters**: Filter cards by `All`, `Vector DBs`, `Embeddings`, `Orchestration`, or `Frameworks`.
-   - **Technology Cards**: Displays each technology with its status (`[Active]` with source file vs `[Not Found]`).
+   - **Technology Cards**: Displays each technology with its detection status (`[Active]` with source file vs `[Not Found]`).
    - Supported frameworks include: `pgvector`, `Chroma`, `FAISS`, `Qdrant`, `Pinecone`, `Weaviate`, `Milvus`, `PostgreSQL`, `Sentence Transformers`, `OpenAI`, `HuggingFace`, `LangChain`, `LlamaIndex`, `Haystack`, `FastAPI`, `Flask`, `Express`, `Python`, and `TypeScript`.
    - **RAG Directories**: Lists folders configured for data ingestion, such as `documents/`, `embeddings/`, and `retrieval/`.
    - **Copy Report**: Copies the full text diagnostic audit to your clipboard.
 
 ---
 
-## 6. Sidebar Controller
+## 7. Sidebar Controller
 
 The RAGLaB Sidebar provides quick-access controls in VS Code's Activity Bar:
 - **Launch Visual Workbench**: Opens the primary multi-tab studio.
@@ -167,7 +191,7 @@ The RAGLaB Sidebar provides quick-access controls in VS Code's Activity Bar:
 
 ---
 
-## 7. Chunking Engineering Principles
+## 8. Chunking Engineering Principles
 
 ### Chunk Size Strategy
 Chunk size dictates the balance between contextual breadth and vector specificity:
@@ -180,19 +204,31 @@ Chunk size dictates the balance between contextual breadth and vector specificit
 
 ### Overlap Principles
 - Always maintain an overlap between **10% and 20%** (for example, 50 characters for a 500-character chunk).
-- Overlap prevents context loss: without overlap, keywords or phrases split across boundary cuts lose semantic continuity in vector space.
+- Overlap prevents context loss: without overlap, keywords or compound clauses split across boundary cuts lose semantic continuity in vector space.
 
 ---
 
-## 8. Diagnostic Warnings and Troubleshooting
+## 9. Diagnostic Warnings and Troubleshooting
 
-| Warning in GUI | Cause | Recommended Action |
+| Warning / Alert in GUI | Cause | Recommended Action |
 |---|---|---|
-| `[Notice] Very small chunk detected` | A chunk has fewer than 50 characters, often due to a short trailing paragraph. | Review your document endings or adjust minimum chunk thresholds. |
+| `[Notice] Very small chunk detected` | A chunk has fewer than 50 characters, often due to a short trailing paragraph. | Review document endings or adjust minimum chunk thresholds. |
 | `[Warning] Large chunk detected` | A paragraph or sentence exceeded 1.5x the target chunk size without natural breaks. | Add punctuation or line breaks to long run-on sentences. |
 | `[Warning] High ratio of empty lines` | More than 30% of document lines are blank. | Clean and normalize document whitespace before embedding. |
 | `[Error] Overlap must be strictly less than chunk size` | Overlap was set greater than or equal to chunk size. | Decrease overlap or increase chunk size using the sliders. |
+| `[Error] Selected file type is not supported` | Attempted to load a binary or unsupported file format (such as PDF or DOCX). | Provide a supported text format: `.md`, `.txt`, `.json`, or `.csv`, or paste text directly. |
 | `[Error] Document contains no usable text` | File is empty or contains only whitespace. | Verify source file contents before processing. |
+
+---
+
+## 10. UI Micro-Interactions and Accessibility
+
+- **Fluid Tab Transitions**: Switching workbench tabs triggers a subtle slide-and-fade animation (`tabSlideUp 0.22s`).
+- **Tactile Copy Confirmation**: Clicking copy buttons swaps the icon to an animated checkmark with "Copied!" text for 1.8 seconds.
+- **Cascading Retrieval Cards**: Ranked query match cards enter with staggered animation delays (`cascadeIn` with `idx * 60ms`).
+- **Active Studio Status Indicator**: The laboratory pulse indicator in the header and sidebar pulses continuously while RAGLaB is active.
+- **Full Keyboard Navigation**: Use `Left` and `Right` arrow keys to step through chunks without touching the mouse.
+- **Zero Emojis**: The interface adheres strictly to professional typography, using crisp SVG icons and high-contrast design tokens.
 
 ---
 
