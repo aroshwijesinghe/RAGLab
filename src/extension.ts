@@ -1,3 +1,4 @@
+import './services/pdfPolyfill';
 import * as vscode from 'vscode';
 import { analyzeDocumentCommand } from './commands/analyzeDocument';
 import { createChunksCommand } from './commands/createChunks';
