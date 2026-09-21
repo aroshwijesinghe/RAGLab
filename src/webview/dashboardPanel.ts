@@ -7,7 +7,7 @@ import { createChunkResult } from '../services/chunkingService';
 import { calculateChunkStatistics } from '../services/statisticsService';
 import { analyzeWorkspace } from '../services/workspaceAnalyzer';
 import { countWords, countLines, countEmptyLines, estimateTokenCount, averageWordsPerLine, formatFileSize } from '../utils/textUtils';
-import { DocumentAnalysis } from '../models/types';
+import { DocumentAnalysis, ChunkStrategy } from '../models/types';
 
 export class DashboardPanel {
   public static currentPanel: DashboardPanel | undefined;
@@ -185,8 +185,15 @@ export class DashboardPanel {
         const fileName: string = message.fileName || 'document.txt';
         const chunkSize: number = message.chunkSize || config.defaultChunkSize;
         const overlap: number = message.overlap ?? config.defaultChunkOverlap;
+        const strategy: ChunkStrategy = message.strategy || 'boundary';
+        const parentChunkSize: number | undefined = message.parentChunkSize;
 
-        const chunkResult = createChunkResult(fileName, text, { chunkSize, overlap });
+        const chunkResult = createChunkResult(fileName, text, {
+          chunkSize,
+          overlap,
+          strategy,
+          parentChunkSize,
+        });
         const statistics = calculateChunkStatistics(chunkResult.chunks);
 
         this._panel.webview.postMessage({

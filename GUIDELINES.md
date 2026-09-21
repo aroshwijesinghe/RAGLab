@@ -65,19 +65,35 @@ The **Document Inspector** parses raw documents to calculate character count, wo
 
 ## 3. Chunking Studio and Visualizer Guide
 
-The **Chunking Studio** divides source text into semantically cohesive partitions, respecting paragraph and sentence boundaries while preventing mid-word breaks.
+The **Chunking Studio** divides source text into semantically cohesive partitions using your choice of three architectural strategies:
+
+### Architecture Strategies in the GUI:
+1. **Parent-Document (Small-to-Big) [Highest Accuracy]**:
+   - Generates compact Child Search Units (250–300 chars) for high-precision vector similarity matching.
+   - Generates large Parent Context Units (1,200–1,500 chars) that are fed into the LLM prompt.
+   - Completely eliminates vector dilution while ensuring the model has full surrounding context.
+2. **Markdown & Structural Hierarchy [AST Integrity]**:
+   - Treats Markdown tables and fenced code blocks as unbroken atomic units (never sliced across borders).
+   - Generates hierarchical breadcrumbs (`[Document > Section > Subsection]`) so isolated chunks retain their structural context.
+3. **Recursive Boundary-Aware [Balanced]**:
+   - Splits text sequentially along paragraph (`\n\n`), sentence (`. ! ?`), and word boundaries.
 
 ### Configuring Parameters:
 1. Open the **Chunking Studio** tab.
-2. Configure settings with the interactive sliders, steppers, or one-click **Quick Presets**:
-   - **Factoid (250 / 25)**: Compact segments designed for strict keyword matching, FAQ lookups, and narrow question answering.
-   - **Standard RAG (500 / 50)**: Balanced segments for technical manuals, knowledge bases, and general documentation.
-   - **Deep Context (1000 / 100)**: Broad segments for narrative prose, legal briefs, and summaries.
-   - Or set custom values for **Chunk Size** (50 to 3,000) and **Chunk Overlap** (0 to 500).
-3. **Live Validation**: The interface validates your parameters in real time. If the overlap is greater than or equal to the chunk size, an alert highlights the issue.
-4. Click **Generate Chunks**.
+2. Select your **Architecture Strategy** from the dropdown.
+3. Adjust settings with the sliders, steppers, or one-click **Quick Presets**:
+   - **Factoid (250 / 25)**: Compact segments for strict fact extraction and FAQ lookup.
+   - **Standard RAG (500 / 50)**: Balanced segments for general technical documentation.
+   - **Deep Context (1000 / 100)**: Broad segments for narrative prose and summaries.
+   - When in Parent-Document mode, customize **Parent Context Size** (default: 1,200 chars).
+4. **Live Validation**: The interface validates your parameters in real time. Alerts will flag if overlap equals or exceeds chunk size, or if parent size is smaller than child size.
+5. Click **Generate Chunks**.
 
 ### Navigating and Inspecting Chunks:
+- **Parent-Document Dual View**:
+  - In Parent-Document mode, click **Child Search Unit** to inspect the exact vector search unit, or click **Parent LLM Context** to inspect the full context block with the child unit highlighted inside it.
+- **Hierarchy & Structural Badges**:
+  - Review the active heading breadcrumb trail (e.g. `System > Database > PostgreSQL Config`) and atomic block badges (`Preserved Table`, `Preserved Code Block`).
 - **Navigation Controls**:
   - Click **Previous** and **Next** or use the left and right keyboard arrow keys to step through segments.
   - Enter a number into the `Chunk [ X ] of [ Total ]` field to jump directly to any chunk.
@@ -102,11 +118,12 @@ Located directly beneath the chunk viewer in the Chunking Studio, the **Retrieva
 
 ### How to Use the Simulator:
 1. Enter a realistic user prompt or question (for example: *"Why is sentence boundary preservation critical for vector search?"*).
-2. Click **Retrieve Top-K** or press `Enter`.
+2. Click **Retrieve Top Chunks** or press `Enter`.
 3. The internal TF-IDF scoring engine evaluates all chunks and displays the **Top-3 Ranked Matches** with relevance score percentages.
-4. **Click any ranked card** to jump directly to that chunk in the explorer with query terms highlighted.
-5. **LLM Context Headroom Gauge**:
-   - Displays the cumulative token count of the retrieved chunks.
+4. When Parent-Document mode is active, each card displays the matching child score alongside the **Parent Context token size**.
+5. **Click any ranked card** to jump directly to that chunk in the explorer with query terms highlighted.
+6. **LLM Context Headroom Gauge**:
+   - Displays the cumulative token count of the retrieved chunks (or unique parent context blocks).
    - Calculates the percentage footprint against standard 4K and 8K context windows so you can ensure your prompt templates and system instructions have sufficient space.
 
 ---

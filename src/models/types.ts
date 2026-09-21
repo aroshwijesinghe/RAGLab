@@ -43,12 +43,19 @@ export interface DocumentAnalysis {
   content: string;
 }
 
+/** Supported chunking strategies */
+export type ChunkStrategy = 'boundary' | 'markdown' | 'parent_document';
+
 /** Configuration for text chunking */
 export interface ChunkConfig {
   /** Target chunk size in characters */
   chunkSize: number;
   /** Number of characters to overlap between chunks */
   overlap: number;
+  /** Selected chunking strategy (defaults to 'boundary') */
+  strategy?: ChunkStrategy;
+  /** Parent chunk target size in characters (for parent_document strategy) */
+  parentChunkSize?: number;
 }
 
 /** A single text chunk */
@@ -67,6 +74,18 @@ export interface TextChunk {
   startOffset: number;
   /** End position in original document (character offset) */
   endOffset: number;
+  /** Chunking strategy used */
+  strategy?: ChunkStrategy;
+  /** Hierarchical breadcrumb path (e.g. Document > Section > Subsection) */
+  breadcrumb?: string;
+  /** Parent chunk index if this is a child chunk */
+  parentId?: number;
+  /** Full parent chunk content for LLM prompt context */
+  parentContent?: string;
+  /** Whether this chunk was kept intact as an atomic structural unit */
+  isAtomic?: boolean;
+  /** Type of atomic block if isAtomic is true */
+  atomicType?: 'table' | 'code' | 'heading' | 'none';
 }
 
 /** Result of chunking a document */
@@ -75,8 +94,10 @@ export interface ChunkResult {
   fileName: string;
   /** Chunking configuration used */
   config: ChunkConfig;
-  /** Generated chunks */
+  /** Generated chunks (or child search units in parent_document strategy) */
   chunks: TextChunk[];
+  /** Parent context chunks (when parent_document strategy is used) */
+  parentChunks?: TextChunk[];
   /** Warnings generated during chunking */
   warnings: ChunkWarning[];
 }

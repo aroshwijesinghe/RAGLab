@@ -66,9 +66,9 @@
 | Tab / View | Capabilities and Visual Elements |
 |---|---|
 | **Document Inspector** | Load content via file picker, active editor tab, sample data, or custom scratchpad. Visual metric cards for Characters, Words, Lines, Empty Lines, and Lexical Density. Token estimation heuristic (~words x 1.3). Real-time formatting warnings and direct dispatch to the chunking workbench. |
-| **Chunking Studio** | Dynamic sliders and numeric steppers for Chunk Size (50-3,000) and Chunk Overlap (0-500). Quick presets for Factoid (250/25), Standard RAG (500/50), and Deep Context (1,000/100). Live parameter validation preventing overlap errors. Statistical distribution cards with Min, Average, and Max values. Direct JSON export to disk. |
-| **Chunk Explorer** | Sequential navigation controls (`Previous`, `Next`, index input, and left/right keyboard arrows). Real-time full-text search with marked keyword matches. Chunk utilization progress bar with green/yellow/red status indicators. Continuity badge displaying exact character overlap with adjoining chunks. Single-chunk, all-chunk, and JSON clipboard export. |
-| **Local Retrieval Simulator** | Top-K similarity engine running TF-IDF scoring across in-memory chunks. Enter arbitrary natural-language queries to inspect the Top-3 matching chunks with relevance percentages. One-click jump to review any match in the viewer. LLM Context Headroom Gauge tracking combined token load and percent consumption of 4K and 8K context windows. |
+| **Chunking Studio** | Dynamic architecture strategy selector: **Parent-Document (Small-to-Big)** for maximum accuracy, **Markdown & Structural Hierarchy** for AST table/code preservation, and **Recursive Boundary-Aware**. Interactive sliders and steppers for Chunk Size (50-3,000), Overlap (0-500), and Parent Context Size (600-4,000). Quick presets for Factoid (250/25), Standard RAG (500/50), and Deep Context (1,000/100). Live parameter validation and direct JSON export to disk. |
+| **Chunk Explorer** | Sequential navigation controls (`Previous`, `Next`, index input, and left/right keyboard arrows). Dual-mode toggle for Parent-Document strategy: inspect the **Child Search Unit** or the expanded **Parent LLM Context** with the child highlighted inside it. Breadcrumb hierarchy tags and atomic block badges (`Table Preserved`, `Code Block Preserved`). In-place search with marked keyword matches. Chunk utilization progress bar and context continuity indicators. |
+| **Local Retrieval Simulator** | Top-K similarity engine running TF-IDF scoring across in-memory chunks. Enter natural-language queries to inspect the Top-3 matching chunks with relevance percentages. In Parent-Document mode, inspects both child match score and expanded parent context token footprint. LLM Context Headroom Gauge tracking combined token load and percent consumption of 4K and 8K context windows. |
 | **Workspace Scanner** | Automatic scan of project manifests (`requirements.txt`, `package.json`, `pyproject.toml`). RAG readiness indicator with status pill. Category filters for Vector Databases, Embeddings, Orchestration, and Web Frameworks. Detected folder map (`documents/`, `embeddings/`, etc.) and formatted text report export. |
 | **Guidelines Tab** | Visual architectural ASCII diagram, chunk sizing decision matrix, overlap engineering formulas, and direct navigation to the comprehensive user handbook. |
 
@@ -107,20 +107,25 @@ RAGLaB can be opened through three convenient entry points:
 ### 3. Chunking Studio and Visualizer
 
 1. Open the **Chunking Studio** tab.
-2. Adjust configuration parameters using sliders, steppers, or one of the **Quick Presets**:
+2. Select your **Architecture Strategy**:
+   - **Parent-Document (Small-to-Big) [Highest Accuracy]**: Partitions text into large parent context blocks (for the LLM prompt) and small child units (for vector search). Eliminates vector dilution while preventing context starvation.
+   - **Markdown & Structural Hierarchy [AST Integrity]**: Preserves Markdown tables and fenced code blocks as atomic units (never severed), while attaching hierarchical heading breadcrumbs (`[Document > Section > Subsection]`).
+   - **Recursive Boundary-Aware [Balanced]**: Hierarchically splits across paragraphs (`\n\n`), sentences (`. ! ?`), and words.
+3. Configure parameters using sliders, steppers, or **Quick Presets**:
    - **Factoid (250 / 25)**: Compact partitions optimized for precise entity lookups and FAQ matching.
    - **Standard RAG (500 / 50)**: Balanced partitions suitable for general technical documentation and articles.
    - **Deep Context (1000 / 100)**: Broad partitions for narrative prose, legal briefs, and summaries.
-   - Or set custom values for **Chunk Size** (50 to 3,000) and **Chunk Overlap** (0 to 500).
-   - *Parameter Validation*: If overlap equals or exceeds chunk size, an inline alert prevents execution until corrected.
-3. Click **Generate Chunks**.
-4. Examine the generated distribution:
+   - For Parent-Document mode, adjust **Parent Context Size** (default: 1,200 chars).
+   - *Parameter Validation*: If overlap equals or exceeds chunk size, or if parent size is less than child size, an inline alert prevents execution until corrected.
+4. Click **Generate Chunks**.
+5. Examine the generated distribution:
    - Total chunk count.
    - Character, word, and token distribution (Min, Average, Max).
    - Quality indicators flagging sub-sized or oversized segments.
-5. Inspect segments in the **Chunk Explorer**:
+6. Inspect segments in the **Chunk Explorer**:
+   - In Parent-Document mode, toggle between **Child Search Unit** (the exact vector search slice) and **Parent LLM Context** (the full context block with the child slice highlighted).
+   - In Markdown mode, review the **Hierarchy Breadcrumb** pill and atomic preservation badges.
    - Use **Previous** and **Next** buttons or keyboard arrow keys (`Left` / `Right`) to browse segments sequentially.
-   - Enter a target index into the chunk counter to jump directly.
    - Enter terms into the search bar to highlight occurrences in yellow and view matching chunk totals.
    - Use **Copy Chunk** for the active segment, **Copy All Chunks** for a concatenated overview, or **Save to File (.json)** to write the dataset directly to your workspace.
 
@@ -130,12 +135,13 @@ RAGLaB can be opened through three convenient entry points:
 
 Located beneath the chunk preview in the Chunking Studio:
 1. Enter a natural language query (for example: *"How does vector chunking preserve context?"*).
-2. Click **Retrieve Top-K** or press `Enter`.
+2. Click **Retrieve Top Chunks** or press `Enter`.
 3. The local retrieval engine scores all chunks using TF-IDF and returns the **Top-3 Ranked Matches** with match percentages.
-4. Click any ranked match card to instantly navigate to that chunk in the explorer with matching terms highlighted.
-5. Review the **LLM Context Headroom Gauge**:
-   - Calculates the collective token footprint of retrieved chunks.
-   - Displays percentage consumption against standard 4K and 8K context windows, ensuring prompt templates and system directives have ample space.
+4. In Parent-Document mode, each card displays the matching child score alongside the **Parent Context token size**.
+5. Click any ranked match card to instantly navigate to that chunk in the explorer with matching terms highlighted.
+6. Review the **LLM Context Headroom Gauge**:
+   - Calculates the collective token footprint of retrieved chunks (or unique parent context blocks).
+   - Displays percentage consumption against standard 4K and 8K context windows, ensuring prompt templates and system directives have ample headroom.
 
 ---
 
@@ -194,9 +200,35 @@ Configure global defaults in VS Code Settings (`Ctrl+,` / `Cmd+,`) under **Exten
 
 ## Chunking Strategy and Engineering Guide
 
-### Recursive Hierarchical Splitting
+RAGLaB equips engineers with three distinct architectural chunking strategies directly in the GUI:
 
-RAGLaB processes source text using recursive natural-language boundaries:
+### 1. Parent-Document (Small-to-Big) Strategy [Highest Accuracy]
+Solves the fundamental contradiction between vector search precision and LLM context completeness:
+- **Vector Search** prefers small chunks (100–250 tokens) to produce sharp, focused embedding vectors without semantic dilution.
+- **The LLM** needs large chunks (800–2,000 tokens) to retain definitions, conditions, caveats, and full narrative context.
+- **Workflow**: Large Parent Chunks (1,200–1,500 chars) are created for context, and small Child Chunks (250–300 chars) are created for indexing. When a Child Chunk is retrieved, its full Parent Chunk is supplied to the LLM prompt.
+
+```
+Document Text
+  |
+  +--> Parent Chunk #1 (1,200 chars) [Passed to LLM Prompt]
+  |      |-- Child Chunk 1.1 (250 chars) [Indexed in Vector DB]
+  |      |-- Child Chunk 1.2 (250 chars) [Indexed in Vector DB]
+  |      \-- Child Chunk 1.3 (250 chars) [Indexed in Vector DB]
+  |
+  \--> Parent Chunk #2 (1,200 chars) [Passed to LLM Prompt]
+         |-- Child Chunk 2.1 (250 chars) [Indexed in Vector DB]
+         \-- Child Chunk 2.2 (250 chars) [Indexed in Vector DB]
+```
+
+### 2. Markdown & Structural Hierarchy Strategy [AST Integrity]
+Protects structured documents from boundary fracture:
+- **Table Preservation**: Markdown tables (`| col1 | col2 |`) are treated as atomic units and are never severed across chunk borders.
+- **Code Block Preservation**: Fenced code blocks (` ```python ... ``` `) remain whole to avoid syntax fragmentation.
+- **Contextual Breadcrumb Hierarchy**: Parses headings (`#`, `##`, `###`) and prepends breadcrumbs (`[Document > Installation > Config]`) to chunk metadata so isolated chunks carry their domain origin.
+
+### 3. Recursive Boundary-Aware Splitting [Balanced]
+Processes prose hierarchically along natural language boundaries:
 
 ```
 Raw Text Input
@@ -211,13 +243,13 @@ Raw Text Input
          Prevents mid-token truncation so words are never severed.
 ```
 
-### Chunk Sizing Decision Matrix
+### Strategy Selection Matrix
 
-| Target Size | Estimated Tokens | Recommended Application | Architectural Considerations |
+| Strategy | Search Precision | Context Completeness | Best Suited For |
 |---|---|---|---|
-| **Small (100-300 chars)** | 25-75 tokens | Fact extraction, FAQ matching, targeted entity lookup | High vector specificity with low noise; reduced surrounding context. |
-| **Medium (500-1,000 chars)** | 125-250 tokens | Technical manuals, knowledge base articles, standard Q&A | Balanced context retention and vector search precision (standard baseline). |
-| **Large (1,200-2,500 chars)** | 300-600 tokens | Thematic summaries, contracts, legal analysis | Broad context retention; potential dilution of vector similarity scores. |
+| **Parent-Document** | Maximum | Maximum | Mission-critical RAG, legal contracts, complex analytical Q&A |
+| **Markdown / Structural** | High | Very High | Technical wikis, API documentation, developer manuals, tables |
+| **Recursive Boundary** | Balanced | High | Unstructured prose, meeting notes, customer service transcripts |
 
 ### Overlap Engineering Guidelines
 - Maintain an overlap ratio between **10% and 20%** of your target chunk size (for example, 50 characters for a 500-character chunk).

@@ -349,6 +349,47 @@ export function getDashboardHtml(
       width: 100%;
     }
 
+    /* Strategy & Parent-Child Controls */
+    .btn-toggle-group {
+      display: inline-flex;
+      background: rgba(128, 128, 128, 0.12);
+      border-radius: 4px;
+      padding: 2px;
+      gap: 2px;
+      align-items: center;
+    }
+
+    .btn-toggle-group .btn {
+      padding: 3px 8px;
+      font-size: 11px;
+      border-radius: 3px;
+      background: transparent;
+      color: var(--vscode-descriptionForeground);
+      box-shadow: none;
+      transform: none;
+    }
+
+    .btn-toggle-group .btn.active {
+      background: var(--vscode-button-background);
+      color: var(--vscode-button-foreground);
+    }
+
+    .badge-breadcrumb {
+      background: rgba(117, 190, 255, 0.12);
+      color: #75beff;
+      border: 1px solid rgba(117, 190, 255, 0.25);
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .badge-atomic {
+      background: rgba(115, 201, 145, 0.14);
+      color: #73c991;
+      border: 1px solid rgba(115, 201, 145, 0.3);
+    }
+
     /* Warnings Banner */
     .warning-box {
       border-radius: 4px;
@@ -704,6 +745,29 @@ export function getDashboardHtml(
           <button class="btn" id="btn-run-chunking">Generate Chunks</button>
         </div>
 
+        <div class="form-row" style="margin-bottom: 6px;">
+          <div class="form-group" style="min-width: 290px;">
+            <label class="form-label">Architecture Strategy</label>
+            <select id="select-chunk-strategy" style="background: var(--vscode-dropdown-background, var(--vscode-input-background)); color: var(--vscode-dropdown-foreground, var(--vscode-input-foreground)); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 10px; font-size: 12px; cursor: pointer; width: 100%;">
+              <option value="parent_document">Parent-Document (Small-to-Big) [Highest Accuracy]</option>
+              <option value="markdown">Markdown &amp; Structural Hierarchy [AST Integrity]</option>
+              <option value="boundary" selected>Recursive Boundary-Aware (Paragraphs &amp; Sentences)</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="group-parent-size" style="display: none; min-width: 220px;">
+            <label class="form-label">Parent Context Size (chars): <span id="label-parent-size">1200</span></label>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="range" id="slider-parent-size" min="600" max="4000" step="100" value="1200">
+              <input type="number" id="input-parent-size" min="200" max="10000" value="1200" style="width: 70px;">
+            </div>
+          </div>
+
+          <div id="strategy-explainer" style="font-size: 11.5px; color: var(--vscode-descriptionForeground); align-self: center; line-height: 1.4; flex: 1; min-width: 240px; background: rgba(128,128,128,0.06); padding: 8px 12px; border-radius: 4px; border-left: 3px solid var(--accent-color);">
+            Recursive boundary-aware splitting across paragraphs, sentences, and words.
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Chunk Size (chars): <span id="label-chunk-size">500</span></label>
@@ -776,13 +840,20 @@ export function getDashboardHtml(
         <!-- Chunk Visualizer / Navigator -->
         <div class="chunk-preview-box">
           <div class="chunk-preview-header">
-            <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
               <button class="btn btn-secondary" id="btn-prev-chunk" disabled>Previous</button>
               <span>Chunk <input type="number" id="input-chunk-jump" value="1" min="1" max="1" style="width: 50px; text-align: center;"> of <span id="label-total-chunks-nav">1</span></span>
               <button class="btn btn-secondary" id="btn-next-chunk">Next</button>
+
+              <div class="btn-toggle-group" id="parent-child-toggle" style="display: none; margin-left: 6px;">
+                <button class="btn active" id="btn-view-child">Child Search Unit</button>
+                <button class="btn" id="btn-view-parent">Parent LLM Context</button>
+              </div>
             </div>
 
             <div class="chunk-badges">
+              <span class="badge-pill badge-breadcrumb" id="badge-breadcrumb" style="display: none;"></span>
+              <span class="badge-pill badge-atomic" id="badge-atomic" style="display: none;"></span>
               <span class="badge-pill" id="badge-current-chars">0 chars</span>
               <span class="badge-pill" id="badge-current-words">0 words</span>
               <span class="badge-pill" id="badge-current-tokens">~0 tokens</span>
@@ -972,6 +1043,12 @@ export function getDashboardHtml(
     var inputChunkOverlap = document.getElementById('input-chunk-overlap');
     var labelChunkOverlap = document.getElementById('label-chunk-overlap');
     var chunkingDocName = document.getElementById('chunking-doc-name');
+    var selectChunkStrategy = document.getElementById('select-chunk-strategy');
+    var groupParentSize = document.getElementById('group-parent-size');
+    var sliderParentSize = document.getElementById('slider-parent-size');
+    var inputParentSize = document.getElementById('input-parent-size');
+    var labelParentSize = document.getElementById('label-parent-size');
+    var strategyExplainer = document.getElementById('strategy-explainer');
     var chunkConfigError = document.getElementById('chunk-config-error');
     var btnRunChunking = document.getElementById('btn-run-chunking');
     var chunkResultsCard = document.getElementById('chunk-results-card');
@@ -992,6 +1069,12 @@ export function getDashboardHtml(
     var btnNextChunk = document.getElementById('btn-next-chunk');
     var inputChunkJump = document.getElementById('input-chunk-jump');
     var labelTotalChunksNav = document.getElementById('label-total-chunks-nav');
+    var parentChildToggle = document.getElementById('parent-child-toggle');
+    var btnViewChild = document.getElementById('btn-view-child');
+    var btnViewParent = document.getElementById('btn-view-parent');
+    var badgeBreadcrumb = document.getElementById('badge-breadcrumb');
+    var badgeAtomic = document.getElementById('badge-atomic');
+    var currentViewMode = 'child'; // 'child' or 'parent'
     var badgeCurrentChars = document.getElementById('badge-current-chars');
     var badgeCurrentWords = document.getElementById('badge-current-words');
     var badgeCurrentTokens = document.getElementById('badge-current-tokens');
@@ -1092,6 +1175,7 @@ export function getDashboardHtml(
     function validateChunkInputs() {
       var size = parseInt(inputChunkSize.value, 10);
       var overlap = parseInt(inputChunkOverlap.value, 10);
+      var strat = selectChunkStrategy ? selectChunkStrategy.value : 'boundary';
       if (size <= 0) {
         chunkConfigError.textContent = 'Chunk size must be greater than 0.';
         chunkConfigError.style.display = 'block';
@@ -1107,14 +1191,61 @@ export function getDashboardHtml(
         chunkConfigError.style.display = 'block';
         return false;
       }
+      if (strat === 'parent_document') {
+        var parentSize = parseInt(inputParentSize.value, 10) || 1200;
+        if (parentSize <= size) {
+          chunkConfigError.textContent = 'Parent context size (' + parentSize + ') must be strictly greater than child chunk size (' + size + ').';
+          chunkConfigError.style.display = 'block';
+          return false;
+        }
+      }
       chunkConfigError.style.display = 'none';
       return true;
+    }
+
+    function syncParentSize(val) {
+      var num = parseInt(val, 10) || 1200;
+      sliderParentSize.value = num;
+      inputParentSize.value = num;
+      labelParentSize.textContent = num;
+      validateChunkInputs();
     }
 
     sliderChunkSize.addEventListener('input', function(e) { syncSize(e.target.value); });
     inputChunkSize.addEventListener('input', function(e) { syncSize(e.target.value); });
     sliderChunkOverlap.addEventListener('input', function(e) { syncOverlap(e.target.value); });
     inputChunkOverlap.addEventListener('input', function(e) { syncOverlap(e.target.value); });
+    sliderParentSize.addEventListener('input', function(e) { syncParentSize(e.target.value); });
+    inputParentSize.addEventListener('input', function(e) { syncParentSize(e.target.value); });
+
+    selectChunkStrategy.addEventListener('change', function() {
+      var strat = selectChunkStrategy.value;
+      if (strat === 'parent_document') {
+        groupParentSize.style.display = 'flex';
+        strategyExplainer.innerHTML = '<strong>Small-to-Big Strategy:</strong> Partitions document into large parent context blocks (for the LLM) and focused child units (for vector search). Eliminates vector dilution without losing context.';
+      } else if (strat === 'markdown') {
+        groupParentSize.style.display = 'none';
+        strategyExplainer.innerHTML = '<strong>Markdown AST Strategy:</strong> Preserves tables and fenced code blocks as unbroken atomic units and tracks heading breadcrumb hierarchies.';
+      } else {
+        groupParentSize.style.display = 'none';
+        strategyExplainer.innerHTML = '<strong>Recursive Boundary-Aware:</strong> Standard hierarchical splitting across paragraphs, sentences, and words.';
+      }
+      validateChunkInputs();
+    });
+
+    btnViewChild.addEventListener('click', function() {
+      currentViewMode = 'child';
+      btnViewChild.classList.add('active');
+      btnViewParent.classList.remove('active');
+      renderCurrentChunk();
+    });
+
+    btnViewParent.addEventListener('click', function() {
+      currentViewMode = 'parent';
+      btnViewParent.classList.add('active');
+      btnViewChild.classList.remove('active');
+      renderCurrentChunk();
+    });
 
     // Document Inspector Actions
     btnPickFile.addEventListener('click', function() {
@@ -1163,12 +1294,16 @@ export function getDashboardHtml(
       }
       var size = parseInt(inputChunkSize.value, 10);
       var overlap = parseInt(inputChunkOverlap.value, 10);
+      var strategy = selectChunkStrategy ? selectChunkStrategy.value : 'boundary';
+      var parentChunkSize = parseInt(inputParentSize.value, 10) || 1200;
       vscode.postMessage({
         command: 'requestChunking',
         text: text,
         fileName: currentFileName,
         chunkSize: size,
-        overlap: overlap
+        overlap: overlap,
+        strategy: strategy,
+        parentChunkSize: parentChunkSize
       });
     });
 
@@ -1178,48 +1313,99 @@ export function getDashboardHtml(
         chunkContentView.textContent = 'No chunks available.';
         chunkUtilBar.style.width = '0%';
         chunkOverlapNotice.textContent = 'No active chunk.';
+        badgeBreadcrumb.style.display = 'none';
+        badgeAtomic.style.display = 'none';
+        parentChildToggle.style.display = 'none';
         return;
       }
 
       var chunk = currentChunks[currentChunkIndex];
       inputChunkJump.value = currentChunkIndex + 1;
-      badgeCurrentChars.textContent = chunk.characterCount.toLocaleString() + ' chars';
-      badgeCurrentWords.textContent = chunk.wordCount.toLocaleString() + ' words';
-      badgeCurrentTokens.textContent = '~' + chunk.estimatedTokenCount.toLocaleString() + ' tokens';
-      badgeCurrentOffsets.textContent = 'Offsets: ' + chunk.startOffset + ' -> ' + chunk.endOffset;
 
-      var targetSize = parseInt(inputChunkSize.value, 10) || 500;
-      var pct = Math.min(100, Math.round((chunk.characterCount / targetSize) * 100));
-      chunkUtilBar.style.width = pct + '%';
-      if (pct < 50) {
-        chunkUtilBar.style.background = 'var(--warning-color)';
-      } else if (pct > 120) {
-        chunkUtilBar.style.background = 'var(--error-color)';
+      // Breadcrumb badge
+      if (chunk.breadcrumb) {
+        badgeBreadcrumb.style.display = 'inline-flex';
+        badgeBreadcrumb.textContent = chunk.breadcrumb;
+        badgeBreadcrumb.title = chunk.breadcrumb;
       } else {
-        chunkUtilBar.style.background = 'var(--accent-color)';
+        badgeBreadcrumb.style.display = 'none';
       }
 
-      // Overlap Notice
-      if (currentChunkIndex < currentChunks.length - 1) {
-        var nextChunk = currentChunks[currentChunkIndex + 1];
-        var overlapLen = Math.max(0, chunk.endOffset - nextChunk.startOffset);
-        chunkOverlapNotice.innerHTML = '<strong>Context Continuity:</strong> Shares ~' + overlapLen + ' overlapping characters with Chunk #' + (nextChunk.index + 1) + '.';
+      // Atomic block badge
+      if (chunk.isAtomic) {
+        badgeAtomic.style.display = 'inline-flex';
+        badgeAtomic.textContent = 'Preserved ' + (chunk.atomicType === 'code' ? 'Code Block' : (chunk.atomicType === 'table' ? 'Table' : 'Atomic Block'));
       } else {
-        chunkOverlapNotice.innerHTML = '<strong>Terminal Chunk:</strong> Final segment of document.';
+        badgeAtomic.style.display = 'none';
+      }
+
+      // Parent-Child Toggle
+      if (chunk.parentContent) {
+        parentChildToggle.style.display = 'inline-flex';
+      } else {
+        parentChildToggle.style.display = 'none';
+        currentViewMode = 'child';
+        btnViewChild.classList.add('active');
+        btnViewParent.classList.remove('active');
+      }
+
+      if (currentViewMode === 'parent' && chunk.parentContent) {
+        badgeCurrentChars.textContent = chunk.parentContent.length.toLocaleString() + ' chars (Parent Context)';
+        var parentWords = chunk.parentContent.trim().split(/\s+/).length;
+        badgeCurrentWords.textContent = parentWords.toLocaleString() + ' words';
+        badgeCurrentTokens.textContent = '~' + Math.round(parentWords * 1.3).toLocaleString() + ' tokens';
+        badgeCurrentOffsets.textContent = 'Parent Unit #' + ((chunk.parentId !== undefined ? chunk.parentId : 0) + 1);
+        chunkUtilBar.style.width = '100%';
+        chunkUtilBar.style.background = 'var(--accent-color)';
+
+        chunkOverlapNotice.innerHTML = '<strong>Parent LLM Context:</strong> This full context block is supplied to the LLM prompt when Child Unit #' + (chunk.index + 1) + ' matches vector retrieval.';
+
+        var parentEscaped = escapeHtmlClient(chunk.parentContent);
+        var childEscaped = escapeHtmlClient(chunk.content);
+        if (childEscaped && parentEscaped.indexOf(childEscaped) !== -1) {
+          chunkContentView.innerHTML = parentEscaped.replace(childEscaped, '<mark style="background: rgba(0, 120, 212, 0.35); color: inherit; border-radius: 2px; padding: 2px 0;">' + childEscaped + '</mark>');
+        } else {
+          chunkContentView.textContent = chunk.parentContent;
+        }
+      } else {
+        badgeCurrentChars.textContent = chunk.characterCount.toLocaleString() + ' chars';
+        badgeCurrentWords.textContent = chunk.wordCount.toLocaleString() + ' words';
+        badgeCurrentTokens.textContent = '~' + chunk.estimatedTokenCount.toLocaleString() + ' tokens';
+        badgeCurrentOffsets.textContent = 'Offsets: ' + chunk.startOffset + ' -> ' + chunk.endOffset;
+
+        var targetSize = parseInt(inputChunkSize.value, 10) || 500;
+        var pct = Math.min(100, Math.round((chunk.characterCount / targetSize) * 100));
+        chunkUtilBar.style.width = pct + '%';
+        if (pct < 50 && !chunk.isAtomic) {
+          chunkUtilBar.style.background = 'var(--warning-color)';
+        } else if (pct > 130 && !chunk.isAtomic) {
+          chunkUtilBar.style.background = 'var(--error-color)';
+        } else {
+          chunkUtilBar.style.background = 'var(--accent-color)';
+        }
+
+        // Overlap Notice
+        if (currentChunkIndex < currentChunks.length - 1) {
+          var nextChunk = currentChunks[currentChunkIndex + 1];
+          var overlapLen = Math.max(0, chunk.endOffset - nextChunk.startOffset);
+          chunkOverlapNotice.innerHTML = '<strong>Context Continuity:</strong> Shares ~' + overlapLen + ' overlapping characters with Chunk #' + (nextChunk.index + 1) + '.';
+        } else {
+          chunkOverlapNotice.innerHTML = '<strong>Terminal Chunk:</strong> Final segment of document.';
+        }
+
+        // Search highlight
+        if (searchQuery) {
+          var escapedText = escapeHtmlClient(chunk.content);
+          var escapedQuery = escapeHtmlClient(searchQuery);
+          var regex = new RegExp(escapedQuery.replace(/[.*+?^\${}()|[\\]\\\\]/g, '\\\\$&'), 'gi');
+          chunkContentView.innerHTML = escapedText.replace(regex, function(m) { return '<mark>' + m + '</mark>'; });
+        } else {
+          chunkContentView.textContent = chunk.content;
+        }
       }
 
       btnPrevChunk.disabled = (currentChunkIndex === 0);
       btnNextChunk.disabled = (currentChunkIndex === currentChunks.length - 1);
-
-      // Search highlight
-      if (searchQuery) {
-        var escapedText = escapeHtmlClient(chunk.content);
-        var escapedQuery = escapeHtmlClient(searchQuery);
-        var regex = new RegExp(escapedQuery.replace(/[.*+?^\${}()|[\\]\\\\]/g, '\\\\$&'), 'gi');
-        chunkContentView.innerHTML = escapedText.replace(regex, function(m) { return '<mark>' + m + '</mark>'; });
-      } else {
-        chunkContentView.textContent = chunk.content;
-      }
     }
 
     btnPrevChunk.addEventListener('click', function() {
@@ -1339,11 +1525,20 @@ export function getDashboardHtml(
       }
 
       var totalTopTokens = 0;
+      var seenParentIds = {};
       topK.forEach(function(item, idx) {
-        totalTopTokens += item.chunk.estimatedTokenCount;
+        if (item.chunk.parentContent && item.chunk.parentId !== undefined) {
+          if (!seenParentIds[item.chunk.parentId]) {
+            seenParentIds[item.chunk.parentId] = true;
+            totalTopTokens += Math.round(item.chunk.parentContent.trim().split(/\s+/).length * 1.3);
+          }
+        } else {
+          totalTopTokens += item.chunk.estimatedTokenCount;
+        }
+
         var card = document.createElement('div');
         card.className = 'retrieval-card';
-        card.title = 'Click to jump to Chunk #' + (item.chunk.index + 1);
+        card.title = 'Click to inspect Chunk #' + (item.chunk.index + 1);
 
         var left = document.createElement('div');
         left.style.display = 'flex';
@@ -1353,12 +1548,13 @@ export function getDashboardHtml(
         var title = document.createElement('span');
         title.style.fontWeight = '600';
         title.style.fontSize = '12px';
-        title.textContent = 'Rank #' + (idx + 1) + ' - Chunk #' + (item.chunk.index + 1) + ' (' + item.chunk.characterCount + ' chars, ~' + item.chunk.estimatedTokenCount + ' tokens)';
+        var parentTag = item.chunk.parentContent ? ' [Parent Context: ~' + Math.round(item.chunk.parentContent.trim().split(/\s+/).length * 1.3) + ' tokens]' : '';
+        title.textContent = 'Rank #' + (idx + 1) + ' - Chunk #' + (item.chunk.index + 1) + ' (' + item.chunk.characterCount + ' chars, ~' + item.chunk.estimatedTokenCount + ' tokens)' + parentTag;
 
         var preview = document.createElement('span');
         preview.style.fontSize = '11px';
         preview.style.color = 'var(--vscode-descriptionForeground)';
-        preview.textContent = item.chunk.content.substring(0, 90) + '...';
+        preview.textContent = item.chunk.content.substring(0, 95) + '...';
 
         left.appendChild(title);
         left.appendChild(preview);
@@ -1383,7 +1579,8 @@ export function getDashboardHtml(
       });
 
       var headroomPct = ((totalTopTokens / 4096) * 100).toFixed(1);
-      badgeHeadroom.textContent = 'Top-3: ~' + totalTopTokens + ' tokens (' + headroomPct + '% of 4K context)';
+      var headroomLabel = (topK[0] && topK[0].chunk.parentContent) ? 'Parent LLM Context: ~' : 'Top-3 Chunks: ~';
+      badgeHeadroom.textContent = headroomLabel + totalTopTokens + ' tokens (' + headroomPct + '% of 4K window)';
     }
 
     btnRunSim.addEventListener('click', runRetrievalSimulation);

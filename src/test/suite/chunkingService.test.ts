@@ -138,4 +138,121 @@ describe('Chunking Service', () => {
       assert.strictEqual(result.chunks.length, 0);
     });
   });
+
+  describe('chunkMarkdown (Structural & AST Strategy)', () => {
+    it('should preserve Markdown tables as unbroken atomic units', () => {
+      const mdWithTable = [
+        '# Introduction',
+        'Here is a description of database models.',
+        '',
+        '| Model | Context | Accuracy |',
+        '|---|---|---|',
+        '| Llama-3 | 8192 | 84% |',
+        '| Mistral | 32768 | 82% |',
+        '',
+        'Follow-up text concluding the overview.'
+      ].join('\n');
+
+      const result = createChunkResult('doc.md', mdWithTable, {
+        chunkSize: 120,
+        overlap: 10,
+        strategy: 'markdown'
+      });
+
+      assert.ok(result.chunks.length > 0);
+      const tableChunk = result.chunks.find(c => c.isAtomic && c.atomicType === 'table');
+      assert.ok(tableChunk, 'Expected an unbroken table chunk');
+      assert.ok(tableChunk.content.includes('| Llama-3 |'));
+      assert.ok(tableChunk.content.includes('| Mistral |'));
+      assert.ok(tableChunk.breadcrumb?.includes('Introduction'));
+    });
+
+    it('should preserve fenced code blocks as unbroken atomic units', () => {
+      const mdWithCode = [
+        '## Code Example',
+        'Run the following python snippet:',
+        '```python',
+        'def process_rag():',
+        '    chunks = chunk_text("Hello")',
+        '    return chunks',
+        '```',
+        'Done.'
+      ].join('\n');
+
+      const result = createChunkResult('example.md', mdWithCode, {
+        chunkSize: 100,
+        overlap: 10,
+        strategy: 'markdown'
+      });
+
+      const codeChunk = result.chunks.find(c => c.isAtomic && c.atomicType === 'code');
+      assert.ok(codeChunk, 'Expected an unbroken code block chunk');
+      assert.ok(codeChunk.content.includes('def process_rag():'));
+      assert.ok(codeChunk.breadcrumb?.includes('Code Example'));
+    });
+
+    it('should generate hierarchical breadcrumb trail from headings', () => {
+      const md = [
+        '# System Architecture',
+        'Overview text.',
+        '## Database Layer',
+        'Database details.',
+        '### PostgreSQL Tuning',
+        'Parameters and performance optimizations.'
+      ].join('\n');
+
+      const result = createChunkResult('arch.md', md, {
+        chunkSize: 500,
+        overlap: 20,
+        strategy: 'markdown'
+      });
+
+      const pgChunk = result.chunks.find(c => c.content.includes('PostgreSQL Tuning') || c.content.includes('performance optimizations'));
+      assert.ok(pgChunk, 'Expected chunk under PostgreSQL tuning');
+      assert.ok(pgChunk.breadcrumb?.includes('System Architecture'));
+      assert.ok(pgChunk.breadcrumb?.includes('Database Layer'));
+      assert.ok(pgChunk.breadcrumb?.includes('PostgreSQL Tuning'));
+    });
+  });
+
+  describe('chunkParentDocument (Small-to-Big Strategy)', () => {
+    it('should generate child chunks linked to parent context blocks', () => {
+      const longText = [
+        '# Section 1: Executive Overview',
+        'The quick brown fox jumps over the lazy dog. '.repeat(15),
+        '',
+        '# Section 2: Technical Specifications',
+        'Deep learning models require balanced context windows. '.repeat(15)
+      ].join('\n');
+
+      const result = createChunkResult('long.txt', longText, {
+        chunkSize: 200,
+        overlap: 20,
+        strategy: 'parent_document',
+        parentChunkSize: 800
+      });
+
+      assert.ok(result.chunks.length > 0, 'Should produce child chunks');
+      assert.ok(result.parentChunks && result.parentChunks.length > 0, 'Should produce parent chunks');
+      
+      // Each child chunk must have a valid parentId and parentContent
+      for (const child of result.chunks) {
+        assert.strictEqual(child.strategy, 'parent_document');
+        assert.ok(child.parentId !== undefined, 'Child chunk must have parentId');
+        assert.ok(child.parentContent, 'Child chunk must have parentContent');
+        assert.ok(child.parentContent.includes(child.content.trim().slice(0, 30)));
+      }
+    });
+
+    it('should flag error when parentChunkSize is less than or equal to chunkSize', () => {
+      const warnings = validateChunkConfig({
+        chunkSize: 500,
+        overlap: 50,
+        strategy: 'parent_document',
+        parentChunkSize: 400
+      });
+
+      assert.ok(warnings.some(w => w.severity === 'error' && w.message.toLowerCase().includes('parent chunk size')));
+    });
+  });
 });
