@@ -27,15 +27,12 @@ export function getFileType(filePath: string): SupportedFileType {
   return ext;
 }
 
-import { extractTextFromPdf } from '../services/pdfService';
-
 export interface DocumentContentResult {
   content: string;
-  pageCount?: number;
 }
 
 /**
- * Read document content from disk, handling both UTF-8 text documents and binary PDF files.
+ * Read document content from disk as UTF-8 text.
  * Validates file size against the configured maximum.
  */
 export async function readDocumentContent(filePath: string, maxSizeBytes: number): Promise<DocumentContentResult> {
@@ -45,18 +42,8 @@ export async function readDocumentContent(filePath: string, maxSizeBytes: number
     const maxMB = (maxSizeBytes / (1024 * 1024)).toFixed(2);
     throw new Error(
       `File is too large (${sizeMB} MB). Maximum allowed size is ${maxMB} MB. ` +
-      `You can change this in Settings → RAGLaB → Max File Size.`
+      `You can change this in Settings -> RAGLaB -> Max File Size.`
     );
-  }
-
-  const ext = path.extname(filePath).toLowerCase();
-  if (ext === '.pdf') {
-    const buffer = await fs.promises.readFile(filePath);
-    const pdfResult = await extractTextFromPdf(buffer);
-    return {
-      content: pdfResult.text,
-      pageCount: pdfResult.totalPages,
-    };
   }
 
   const content = await fs.promises.readFile(filePath, 'utf-8');
@@ -98,10 +85,9 @@ export function getExtensionConfig(): ExtensionConfig {
  */
 export async function promptForFile(): Promise<string | undefined> {
   const filters: Record<string, string[]> = {
-    'Supported Documents': ['txt', 'md', 'json', 'csv', 'pdf'],
-    'PDF Documents': ['pdf'],
-    'Text Files': ['txt'],
+    'Supported Text Documents': ['md', 'txt', 'json', 'csv'],
     'Markdown Files': ['md'],
+    'Text Files': ['txt'],
     'JSON Files': ['json'],
     'CSV Files': ['csv'],
     'All Files': ['*'],

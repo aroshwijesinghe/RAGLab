@@ -19,7 +19,7 @@ export async function analyzeDocument(filePath: string, maxFileSize: number): Pr
         const fileSizeBytes = await getFileSize(filePath);
         const fileType = getFileType(filePath);
         const fileName = path.basename(filePath);
-        const { content, pageCount } = await readDocumentContent(filePath, maxFileSize);
+        const { content } = await readDocumentContent(filePath, maxFileSize);
 
         const characterCount = content.length;
         const wordCount = countWords(content);
@@ -41,8 +41,7 @@ export async function analyzeDocument(filePath: string, maxFileSize: number): Pr
             emptyLineCount,
             estimatedTokenCount: estimatedTokens,
             averageWordsPerLine: avgWords,
-            content,
-            pageCount
+            content
         };
     } catch (error: any) {
         throw new Error(error.message || String(error));

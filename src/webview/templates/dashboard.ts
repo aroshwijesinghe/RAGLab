@@ -915,8 +915,12 @@ export function getDashboardHtml(
           </div>
         </div>
 
+        <div class="warning-box info" style="margin-bottom: 2px;">
+          <strong>Supported Input Formats:</strong> RAGLaB profiles and partitions text-native documents: <strong>Markdown (.md)</strong>, <strong>Plain Text (.txt)</strong>, <strong>JSON (.json)</strong>, and <strong>CSV (.csv)</strong>. Supplying clean text ensures exact token boundary identification and preserves embedding fidelity.
+        </div>
+
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <div class="drop-zone" id="doc-drop-zone" title="Click or drag documents here">
+          <div class="drop-zone" id="doc-drop-zone" title="Click or drag text documents here">
             <svg class="drop-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
@@ -924,8 +928,8 @@ export function getDashboardHtml(
               <line x1="9" y1="15" x2="12" y2="12"></line>
               <line x1="15" y1="15" x2="12" y2="12"></line>
             </svg>
-            <div class="drop-label">Drop Document Here to Profile &amp; Chunk</div>
-            <div class="drop-hint">Supports PDF, Markdown, Plain Text, JSON, and CSV (or click to browse)</div>
+            <div class="drop-label">Drop Text Document Here to Profile &amp; Chunk</div>
+            <div class="drop-hint">Accepts Markdown (.md), Plain Text (.txt), JSON (.json), and CSV (.csv)</div>
           </div>
 
           <div class="form-label">Or Paste Document Text Directly:</div>
@@ -974,11 +978,6 @@ export function getDashboardHtml(
             <span class="kpi-label">Avg Words / Line</span>
             <span class="kpi-value" id="kpi-avg-words-line">0</span>
             <span class="kpi-note">Lexical density</span>
-          </div>
-          <div class="kpi-card" id="kpi-card-pages" style="display: none;">
-            <span class="kpi-label">Total Pages</span>
-            <span class="kpi-value" id="kpi-pages">0</span>
-            <span class="kpi-note">Document pagination</span>
           </div>
         </div>
       </div>
@@ -1313,8 +1312,6 @@ export function getDashboardHtml(
     var kpiLines = document.getElementById('kpi-lines');
     var kpiEmptyLines = document.getElementById('kpi-empty-lines');
     var kpiAvgWordsLine = document.getElementById('kpi-avg-words-line');
-    var kpiCardPages = document.getElementById('kpi-card-pages');
-    var kpiPages = document.getElementById('kpi-pages');
 
     // Chunking Studio Elements
     var sliderChunkSize = document.getElementById('slider-chunk-size');
@@ -1570,23 +1567,29 @@ export function getDashboardHtml(
         if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
           var file = e.dataTransfer.files[0];
           currentFileName = file.name;
+          var ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+          var allowed = ['.txt', '.md', '.json', '.csv'];
+          if (allowed.indexOf(ext) === -1) {
+            vscode.postMessage({
+              command: 'showWarning',
+              text: 'Unsupported format: "' + file.name + '". RAGLaB profiles text-native documents: Markdown (.md), Plain Text (.txt), JSON (.json), and CSV (.csv).'
+            });
+            return;
+          }
+
           var reader = new FileReader();
           reader.onload = function(evt) {
-            var arrayBuffer = evt.target.result;
-            var bytes = new Uint8Array(arrayBuffer);
-            var binary = '';
-            var len = bytes.byteLength;
-            for (var i = 0; i < len; i++) {
-              binary += String.fromCharCode(bytes[i]);
-            }
-            var base64 = window.btoa(binary);
+            var text = evt.target.result || '';
+            docTextInput.value = text;
+            currentText = text;
+            btnSendToChunking.disabled = false;
             vscode.postMessage({
               command: 'requestAnalyzeDroppedFile',
               fileName: file.name,
-              base64: base64
+              text: text
             });
           };
-          reader.readAsArrayBuffer(file);
+          reader.readAsText(file);
         }
       });
       docDropZone.addEventListener('click', function() {
@@ -2094,12 +2097,6 @@ export function getDashboardHtml(
       kpiLines.textContent = analysis.lineCount.toLocaleString();
       kpiEmptyLines.textContent = analysis.emptyLineCount + ' empty lines';
       kpiAvgWordsLine.textContent = analysis.averageWordsPerLine.toFixed(2);
-      if (analysis.pageCount && analysis.pageCount > 0) {
-        if (kpiCardPages) kpiCardPages.style.display = 'flex';
-        if (kpiPages) kpiPages.textContent = analysis.pageCount.toLocaleString();
-      } else {
-        if (kpiCardPages) kpiCardPages.style.display = 'none';
-      }
 
       // Warnings
       docWarnings.innerHTML = '';

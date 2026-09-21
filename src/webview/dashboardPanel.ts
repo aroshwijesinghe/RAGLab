@@ -6,7 +6,6 @@ import { analyzeDocument } from '../services/documentAnalyzer';
 import { createChunkResult } from '../services/chunkingService';
 import { calculateChunkStatistics } from '../services/statisticsService';
 import { analyzeWorkspace } from '../services/workspaceAnalyzer';
-import { extractTextFromPdf } from '../services/pdfService';
 import { countWords, countLines, countEmptyLines, estimateTokenCount, averageWordsPerLine, formatFileSize } from '../utils/textUtils';
 import { DocumentAnalysis, ChunkStrategy } from '../models/types';
 
@@ -104,7 +103,7 @@ export class DashboardPanel {
         const filePath = await promptForFile();
         if (!filePath) return;
         if (!isSupportedFile(filePath)) {
-          vscode.window.showErrorMessage('Selected file type is not supported. Supported: .txt, .md, .json, .csv, .pdf');
+          vscode.window.showErrorMessage('Selected file type is not supported. Supported text formats: Markdown (.md), Plain Text (.txt), JSON (.json), and CSV (.csv).');
           return;
         }
         try {
@@ -183,44 +182,34 @@ export class DashboardPanel {
 
       case 'requestAnalyzeDroppedFile': {
         const fileName: string = message.fileName || 'document.txt';
-        const base64Data: string = message.base64 || '';
-        const buffer = Buffer.from(base64Data, 'base64');
+        const text: string = message.text || '';
         const ext = path.extname(fileName).toLowerCase();
 
-        try {
-          let text = '';
-          let pageCount: number | undefined;
+        if (!isSupportedFile(fileName)) {
+          vscode.window.showErrorMessage(
+            `Unsupported format: "${fileName}". Please provide text-based documents: Markdown (.md), Plain Text (.txt), JSON (.json), or CSV (.csv).`
+          );
+          return;
+        }
 
-          if (ext === '.pdf') {
-            const pdfResult = await extractTextFromPdf(buffer);
-            text = pdfResult.text;
-            pageCount = pdfResult.totalPages;
-          } else {
-            text = buffer.toString('utf8');
-          }
-
-          const bytes = buffer.length;
-          const analysis: DocumentAnalysis = {
-            fileName,
-            filePath: fileName,
-            fileType: ext as any,
-            fileSizeBytes: bytes,
-            fileSizeFormatted: formatFileSize(bytes),
-            characterCount: text.length,
-            wordCount: countWords(text),
-            lineCount: countLines(text),
-            estimatedTokenCount: estimateTokenCount(text),
-            averageWordsPerLine: averageWordsPerLine(text),
-            emptyLineCount: countEmptyLines(text),
-            pageCount,
-            content: text,
-          };
-          this._panel.webview.postMessage({ type: 'documentAnalyzed', payload: analysis });
-          if (config.showNotifications) {
-            vscode.window.showInformationMessage(`Loaded dropped file ${fileName} into RAGLaB Studio.`);
-          }
-        } catch (err: any) {
-          vscode.window.showErrorMessage(`Failed to process dropped file ${fileName}: ${err.message || String(err)}`);
+        const bytes = Buffer.byteLength(text, 'utf8');
+        const analysis: DocumentAnalysis = {
+          fileName,
+          filePath: fileName,
+          fileType: ext as any,
+          fileSizeBytes: bytes,
+          fileSizeFormatted: formatFileSize(bytes),
+          characterCount: text.length,
+          wordCount: countWords(text),
+          lineCount: countLines(text),
+          estimatedTokenCount: estimateTokenCount(text),
+          averageWordsPerLine: averageWordsPerLine(text),
+          emptyLineCount: countEmptyLines(text),
+          content: text,
+        };
+        this._panel.webview.postMessage({ type: 'documentAnalyzed', payload: analysis });
+        if (config.showNotifications) {
+          vscode.window.showInformationMessage(`Loaded dropped text document ${fileName} into RAGLaB Studio.`);
         }
         break;
       }

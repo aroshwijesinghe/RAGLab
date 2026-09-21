@@ -23,7 +23,7 @@ export async function createChunksCommand(extensionUri: vscode.Uri): Promise<voi
     }
 
     if (!isSupportedFile(filePath)) {
-      vscode.window.showErrorMessage('Selected file type is not supported. Supported: .txt, .md, .json, .csv, .pdf');
+      vscode.window.showErrorMessage('Selected file type is not supported. Supported text formats: Markdown (.md), Plain Text (.txt), JSON (.json), and CSV (.csv).');
       return;
     }
 

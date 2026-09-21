@@ -36,19 +36,30 @@ RAGLaB Studio can be accessed through three entry points:
 2. Type `RAGLaB` and choose **RAGLaB: Open Studio Dashboard**.
 
 ### Option C: Right-Click in the Editor or Explorer
-1. Right-click any `.pdf`, `.md`, `.txt`, `.json`, or `.csv` file.
+1. Right-click any `.md`, `.txt`, `.json`, or `.csv` file.
 2. Select **RAGLaB: Analyze Document** or **RAGLaB: Create Chunks**.
 
 ---
 
 ## 2. Document Inspector Guide
 
-The **Document Inspector** parses raw documents to calculate character count, word density, pagination, line distribution, and estimated token usage.
+The **Document Inspector** parses text documents to calculate character count, word density, line distribution, and estimated token usage.
+
+### Supported Document Formats
+RAGLaB accepts text-native documents:
+- **Markdown (`.md`, `.markdown`)**: Ideal for documentation with headings, code blocks, and tables.
+- **Plain Text (`.txt`)**: Clean unstructured text, transcripts, and notes.
+- **Structured JSON (`.json`)**: Configs, schemas, records, and datasets.
+- **Tabular Data (`.csv`)**: Row-and-column data and tabular summaries.
+- **Direct Scratchpad Input**: Paste any text directly into the inspector.
+
+Text-native formats are the industry best practice for RAG chunking because they preserve exact character boundaries without binary font extraction distortion.
 
 ### How to Use the Interface:
 1. Open the **Document Inspector** tab inside RAGLaB Studio.
-2. Load content using any of the four input methods:
-   - **Select File from Disk**: Select any supported file (`.pdf`, `.txt`, `.md`, `.json`, `.csv`) from your filesystem.
+2. Load content using any of the input methods:
+   - **Drop Zone**: Drag and drop any `.md`, `.txt`, `.json`, or `.csv` file directly into the drop zone.
+   - **Select File from Disk**: Select any supported text file from your filesystem.
    - **Load Active File**: Imports text directly from whichever tab is currently open in your editor.
    - **Load Sample Document**: Instantly loads a comprehensive technical guide on RAG concepts for rapid experimentation without local files.
    - **Scratchpad**: Type or paste arbitrary text into the textarea and click **Analyze Text**.
@@ -56,11 +67,10 @@ The **Document Inspector** parses raw documents to calculate character count, wo
    - **Characters**: Total raw characters in the source.
    - **Words**: Word count based on whitespace separation.
    - **Estimated Tokens**: BPE token heuristic (`~words x 1.3`).
-   - **Total Pages**: When analyzing PDF files, reports verified pagination count from the PDF engine.
    - **Lines and Blank Lines**: Total line count alongside empty line distribution.
    - **Average Words per Line**: Text density metric.
 4. If excessive empty lines or unusual formatting are detected, a warning banner will appear.
-5. Click **Send to Chunking Studio** to pass the active content straight into the chunking workbench. Page anchors (`### Page X`) are retained to provide full retrieval lineage.
+5. Click **Send to Chunking Studio** to pass the active content straight into the chunking workbench.
 
 ---
 

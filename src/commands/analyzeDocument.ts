@@ -23,7 +23,7 @@ export async function analyzeDocumentCommand(extensionUri?: vscode.Uri): Promise
     }
 
     if (!isSupportedFile(filePath)) {
-      vscode.window.showErrorMessage('Selected file type is not supported. Supported: .txt, .md, .json, .csv, .pdf');
+      vscode.window.showErrorMessage('Selected file type is not supported. Supported text formats: Markdown (.md), Plain Text (.txt), JSON (.json), and CSV (.csv).');
       return;
     }
 
@@ -50,9 +50,6 @@ export async function analyzeDocumentCommand(extensionUri?: vscode.Uri): Promise
         outputChannel.appendLine(`  File:               ${analysis.fileName}`);
         outputChannel.appendLine(`  Type:               ${analysis.fileType}`);
         outputChannel.appendLine(`  Size:               ${analysis.fileSizeFormatted}`);
-        if (analysis.pageCount) {
-          outputChannel.appendLine(`  Pages:              ${analysis.pageCount}`);
-        }
         outputChannel.appendLine('');
         outputChannel.appendLine(`  Characters:         ${formatNumber(analysis.characterCount)}`);
         outputChannel.appendLine(`  Words:              ${formatNumber(analysis.wordCount)}`);
