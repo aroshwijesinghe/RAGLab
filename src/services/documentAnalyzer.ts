@@ -11,7 +11,7 @@ import {
 import {
     getFileType,
     getFileSize,
-    readTextFile
+    readDocumentContent
 } from '../utils/fileUtils';
 
 export async function analyzeDocument(filePath: string, maxFileSize: number): Promise<DocumentAnalysis> {
@@ -19,7 +19,7 @@ export async function analyzeDocument(filePath: string, maxFileSize: number): Pr
         const fileSizeBytes = await getFileSize(filePath);
         const fileType = getFileType(filePath);
         const fileName = path.basename(filePath);
-        const content = await readTextFile(filePath, maxFileSize);
+        const { content, pageCount } = await readDocumentContent(filePath, maxFileSize);
 
         const characterCount = content.length;
         const wordCount = countWords(content);
@@ -41,7 +41,8 @@ export async function analyzeDocument(filePath: string, maxFileSize: number): Pr
             emptyLineCount,
             estimatedTokenCount: estimatedTokens,
             averageWordsPerLine: avgWords,
-            content
+            content,
+            pageCount
         };
     } catch (error: any) {
         throw new Error(`Failed to analyze document ${filePath}: ${error.message}`);

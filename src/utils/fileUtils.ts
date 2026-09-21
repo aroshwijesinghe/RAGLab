@@ -27,11 +27,18 @@ export function getFileType(filePath: string): SupportedFileType {
   return ext;
 }
 
+import { extractTextFromPdf } from '../services/pdfService';
+
+export interface DocumentContentResult {
+  content: string;
+  pageCount?: number;
+}
+
 /**
- * Read a text file and return its content.
+ * Read document content from disk, handling both UTF-8 text documents and binary PDF files.
  * Validates file size against the configured maximum.
  */
-export async function readTextFile(filePath: string, maxSizeBytes: number): Promise<string> {
+export async function readDocumentContent(filePath: string, maxSizeBytes: number): Promise<DocumentContentResult> {
   const stats = await fs.promises.stat(filePath);
   if (stats.size > maxSizeBytes) {
     const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
@@ -41,7 +48,28 @@ export async function readTextFile(filePath: string, maxSizeBytes: number): Prom
       `You can change this in Settings → RAGLaB → Max File Size.`
     );
   }
-  return fs.promises.readFile(filePath, 'utf-8');
+
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.pdf') {
+    const buffer = await fs.promises.readFile(filePath);
+    const pdfResult = await extractTextFromPdf(buffer);
+    return {
+      content: pdfResult.text,
+      pageCount: pdfResult.totalPages,
+    };
+  }
+
+  const content = await fs.promises.readFile(filePath, 'utf-8');
+  return { content };
+}
+
+/**
+ * Read a text or document file and return its extracted text content.
+ * Validates file size against the configured maximum.
+ */
+export async function readTextFile(filePath: string, maxSizeBytes: number): Promise<string> {
+  const result = await readDocumentContent(filePath, maxSizeBytes);
+  return result.content;
 }
 
 /**
@@ -70,7 +98,8 @@ export function getExtensionConfig(): ExtensionConfig {
  */
 export async function promptForFile(): Promise<string | undefined> {
   const filters: Record<string, string[]> = {
-    'Supported Documents': ['txt', 'md', 'json', 'csv'],
+    'Supported Documents': ['txt', 'md', 'json', 'csv', 'pdf'],
+    'PDF Documents': ['pdf'],
     'Text Files': ['txt'],
     'Markdown Files': ['md'],
     'JSON Files': ['json'],

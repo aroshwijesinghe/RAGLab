@@ -3,10 +3,10 @@
  */
 
 /** Supported document file types */
-export type SupportedFileType = '.txt' | '.md' | '.json' | '.csv';
+export type SupportedFileType = '.txt' | '.md' | '.json' | '.csv' | '.pdf';
 
 /** List of all supported file extensions */
-export const SUPPORTED_EXTENSIONS: readonly SupportedFileType[] = ['.txt', '.md', '.json', '.csv'] as const;
+export const SUPPORTED_EXTENSIONS: readonly SupportedFileType[] = ['.txt', '.md', '.json', '.csv', '.pdf'] as const;
 
 /** Maximum file size labels for display */
 export const FILE_SIZE_LABELS: Record<string, string> = {
@@ -41,6 +41,8 @@ export interface DocumentAnalysis {
   emptyLineCount: number;
   /** Raw text content */
   content: string;
+  /** Total page count (for PDF documents) */
+  pageCount?: number;
 }
 
 /** Supported chunking strategies */

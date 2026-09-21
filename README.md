@@ -81,7 +81,7 @@
 RAGLaB can be opened through three convenient entry points:
 - **Activity Bar Icon**: Click the beaker icon on the left Activity Bar labeled **RAGLaB**, then click **Launch Visual Workbench**.
 - **Command Palette**: Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS), search for `RAGLaB`, and select **RAGLaB: Open Studio Dashboard**.
-- **Context Menu**: Right-click any text-based document in your File Explorer or Editor and select **RAGLaB: Analyze Document** or **RAGLaB: Create Chunks**.
+- **Context Menu**: Right-click any supported document (`.pdf`, `.md`, `.txt`, `.json`, `.csv`) in your File Explorer or Editor and select **RAGLaB: Analyze Document** or **RAGLaB: Create Chunks**.
 
 ---
 
@@ -89,7 +89,7 @@ RAGLaB can be opened through three convenient entry points:
 
 1. Open the **Document Inspector** tab in RAGLaB Studio.
 2. Select your preferred text input source:
-   - **Select File from Disk**: Opens a native file dialog to choose any `.md`, `.txt`, `.json`, or `.csv` file.
+   - **Select File from Disk**: Opens a native file dialog to choose any `.pdf`, `.md`, `.txt`, `.json`, or `.csv` file.
    - **Load Active File**: Reads content directly from the file currently open in your editor.
    - **Load Sample Document**: Populates the inspector with a pre-configured technical document on RAG architectures for immediate testing.
    - **Scratchpad**: Type or paste arbitrary text directly into the scratchpad area and click **Analyze Text**.
@@ -97,10 +97,11 @@ RAGLaB can be opened through three convenient entry points:
    - **Characters**: Exact character count.
    - **Words**: Total words segmented by whitespace.
    - **Estimated Tokens**: Word-based heuristic calculated as `~words x 1.3`.
+   - **Total Pages**: When analyzing PDF files, reports verified pagination count from the PDF engine.
    - **Lines and Blank Lines**: Total line count alongside empty line distribution.
    - **Average Words per Line**: Measure of textual density.
 4. If formatting issues are detected (e.g. excessive empty lines), a notification banner highlights recommendations.
-5. Click **Send to Chunking Studio** to transfer the parsed text directly into the chunking workbench.
+5. Click **Send to Chunking Studio** to transfer the parsed text directly into the chunking workbench. Page-level breadcrumbs (`### Page X`) are preserved for citation lineage.
 
 ---
 
@@ -261,6 +262,7 @@ Raw Text Input
 
 | Format | Extension | Common RAG Application |
 | :--- | :--- | :--- |
+| **PDF Documents** | `.pdf` | Research papers, financial filings, whitepapers, enterprise reports |
 | **Markdown** | `.md` | Technical documentation, developer guides, README files |
 | **Plain Text** | `.txt` | Unstructured source notes, logs, customer transcripts |
 | **JSON** | `.json` | Chat logs, structured conversational exports, entity dumps |
@@ -283,6 +285,8 @@ src/
 |   +-- openDashboard.ts
 |-- services/                # Pure business logic isolated from UI concerns
 |   |-- documentAnalyzer.ts  # Lexical and token calculation
+|   |-- pdfService.ts        # Pure TypeScript PDF extraction and page mapping
+|   |-- pdfPolyfill.ts       # Runtime DOM polyfills for PDF worker execution
 |   |-- chunkingService.ts   # Boundary-aware text partitioning
 |   |-- statisticsService.ts # Distribution mathematics
 |   +-- workspaceAnalyzer.ts # Manifest parsing and folder audit

@@ -27,6 +27,7 @@ async function main() {
       'src/test/suite/textUtils.test.ts',
       'src/test/suite/chunkingService.test.ts',
       'src/test/suite/statisticsService.test.ts',
+      'src/test/suite/pdfService.test.ts',
     ],
     bundle: true,
     format: 'cjs',
@@ -40,6 +41,20 @@ async function main() {
     plugins: [],
   });
 
+  const fs = require('fs');
+  const path = require('path');
+  function copyWorkerAssets() {
+    const workerSrc = path.join(__dirname, 'node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs');
+    if (fs.existsSync(workerSrc)) {
+      fs.mkdirSync(path.join(__dirname, 'dist'), { recursive: true });
+      fs.copyFileSync(workerSrc, path.join(__dirname, 'dist/pdf.worker.mjs'));
+      fs.mkdirSync(path.join(__dirname, 'dist/test/suite'), { recursive: true });
+      fs.copyFileSync(workerSrc, path.join(__dirname, 'dist/test/suite/pdf.worker.mjs'));
+    }
+  }
+
+  copyWorkerAssets();
+
   if (watch) {
     await ctx.watch();
     await testCtx.watch();
@@ -48,6 +63,7 @@ async function main() {
     await ctx.dispose();
     await testCtx.rebuild();
     await testCtx.dispose();
+    copyWorkerAssets();
   }
 }
 main().catch((e) => {

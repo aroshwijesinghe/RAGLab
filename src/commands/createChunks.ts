@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { getExtensionConfig, promptForFile, isSupportedFile } from '../utils/fileUtils';
+import { getExtensionConfig, promptForFile, isSupportedFile, readDocumentContent } from '../utils/fileUtils';
 import { createChunkResult } from '../services/chunkingService';
 import { calculateChunkStatistics } from '../services/statisticsService';
 import { DashboardPanel } from '../webview/dashboardPanel';
@@ -23,7 +23,7 @@ export async function createChunksCommand(extensionUri: vscode.Uri): Promise<voi
     }
 
     if (!isSupportedFile(filePath)) {
-      vscode.window.showErrorMessage('Selected file type is not supported. Supported: .txt, .md, .json, .csv');
+      vscode.window.showErrorMessage('Selected file type is not supported. Supported: .txt, .md, .json, .csv, .pdf');
       return;
     }
 
@@ -56,7 +56,7 @@ export async function createChunksCommand(extensionUri: vscode.Uri): Promise<voi
     const chunkSize = parseInt(sizeInput, 10);
     const overlap = parseInt(overlapInput, 10);
 
-    const content = await fs.promises.readFile(filePath, 'utf8');
+    const { content } = await readDocumentContent(filePath, config.maxFileSize);
     const fileName = vscode.Uri.file(filePath).path.split('/').pop() || 'unknown';
 
     const chunkConfig = { chunkSize, overlap };

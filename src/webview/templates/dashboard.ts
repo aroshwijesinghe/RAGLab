@@ -733,6 +733,11 @@ export function getDashboardHtml(
             <span class="kpi-value" id="kpi-avg-words-line">0</span>
             <span class="kpi-note">Lexical density</span>
           </div>
+          <div class="kpi-card" id="kpi-card-pages" style="display: none;">
+            <span class="kpi-label">Total Pages</span>
+            <span class="kpi-value" id="kpi-pages">0</span>
+            <span class="kpi-note">Document pagination</span>
+          </div>
         </div>
       </div>
     </div>
@@ -1034,6 +1039,8 @@ export function getDashboardHtml(
     var kpiLines = document.getElementById('kpi-lines');
     var kpiEmptyLines = document.getElementById('kpi-empty-lines');
     var kpiAvgWordsLine = document.getElementById('kpi-avg-words-line');
+    var kpiCardPages = document.getElementById('kpi-card-pages');
+    var kpiPages = document.getElementById('kpi-pages');
 
     // Chunking Studio Elements
     var sliderChunkSize = document.getElementById('slider-chunk-size');
@@ -1649,6 +1656,12 @@ export function getDashboardHtml(
       kpiLines.textContent = analysis.lineCount.toLocaleString();
       kpiEmptyLines.textContent = analysis.emptyLineCount + ' empty lines';
       kpiAvgWordsLine.textContent = analysis.averageWordsPerLine.toFixed(2);
+      if (analysis.pageCount && analysis.pageCount > 0) {
+        if (kpiCardPages) kpiCardPages.style.display = 'flex';
+        if (kpiPages) kpiPages.textContent = analysis.pageCount.toLocaleString();
+      } else {
+        if (kpiCardPages) kpiCardPages.style.display = 'none';
+      }
 
       // Warnings
       docWarnings.innerHTML = '';

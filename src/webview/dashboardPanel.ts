@@ -103,7 +103,7 @@ export class DashboardPanel {
         const filePath = await promptForFile();
         if (!filePath) return;
         if (!isSupportedFile(filePath)) {
-          vscode.window.showErrorMessage('Selected file type is not supported. Supported: .txt, .md, .json, .csv');
+          vscode.window.showErrorMessage('Selected file type is not supported. Supported: .txt, .md, .json, .csv, .pdf');
           return;
         }
         try {
