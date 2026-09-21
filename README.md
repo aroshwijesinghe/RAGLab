@@ -1,352 +1,351 @@
-# 🧪 RAGLaB
+<p align="center">
+  <img src="resources/logo.png" width="160" alt="RAGLaB Logo" />
+</p>
 
-**Interactive GUI Studio & Diagnostic Workbench for Retrieval-Augmented Generation (RAG) Pipelines**
+# RAGLaB
+
+**Interactive GUI Studio and Diagnostic Workbench for Retrieval-Augmented Generation (RAG) Engineering**
 
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-Extension-blue?logo=visualstudiocode)](https://github.com/aroshwijesinghe/RAGLab)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Local First](https://img.shields.io/badge/Security-100%25%20Local-success)](README.md#-security--privacy)
+[![Local First](https://img.shields.io/badge/Security-100%25%20Local-success)](#security--privacy)
 
 ---
 
 ```
-┌───────────┐     ┌──────────┐     ┌────────────┐     ┌─────────────────┐     ┌───────────┐     ┌─────┐
-│ Documents │ ──► │ Chunking │ ──► │ Embeddings │ ──► │ Vector Database │ ──► │ Retrieval │ ──► │ LLM │
-│ (.md,.txt)│     │(RAGLaB)  │     │(Embeddings)│     │(pgvector,Chroma)│     │  (Top-K)  │     │(Gen)│
-└───────────┘     └──────────┘     └────────────┘     └─────────────────┘     └───────────┘     └─────┘
++-----------+     +----------+     +------------+     +-----------------+     +-----------+     +-----+
+| Documents | --> | Chunking | --> | Embeddings | --> | Vector Database | --> | Retrieval | --> | LLM |
+| (.md,.txt)|     | (RAGLaB) |     | (Vectors)  |     |(pgvector,Chroma)|     |  (Top-K)  |     |(Gen)|
++-----------+     +----------+     +------------+     +-----------------+     +-----------+     +-----+
 ```
 
-> **Retrieval-Augmented Generation (RAG)** empowers Large Language Models (LLMs) with external, verifiable knowledge. Source documents are broken into discrete text chunks, embedded into high-dimensional vectors, indexed into a vector database, retrieved based on semantic similarity to a query, and provided to the model as prompt context.
+> **Retrieval-Augmented Generation (RAG)** pairs Large Language Models with external, verifiable reference materials. Source files are segmented into discrete text chunks, embedded into vector space, stored in a vector index, retrieved by semantic relevance to a query, and provided as prompt context.
 >
-> The accuracy and hallucination rate of your RAG pipeline fundamentally depends on the **quality of your document chunking**. Inaccurate cuts, broken sentences, and noisy segments cause vector retrieval failures. **RAGLaB** gives you an interactive, lightweight, 100% local GUI studio to inspect, test, and tune your documents before ingestion.
+> Downstream model precision and hallucination prevention depend directly on **chunking quality**. Arbitrary text splits, severed sentences, and noisy segments degrade similarity search and truncate critical facts. **RAGLaB** provides an interactive, lightweight, 100% local workbench within your IDE to inspect, partition, test, and tune document structures before ingestion.
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [🌟 Key Highlights](#-key-highlights)
-- [🖥️ Interactive GUI Feature Tour](#️-interactive-gui-feature-tour)
-- [📖 How to Use Every Feature](#-how-to-use-every-feature)
+- [Key Highlights](#key-highlights)
+- [Interactive GUI Feature Tour](#interactive-gui-feature-tour)
+- [Feature Usage Guide](#feature-usage-guide)
   - [1. Launching RAGLaB Studio](#1-launching-raglab-studio)
-  - [2. Using the Document Inspector](#2-using-the-document-inspector)
-  - [3. Using the Chunking Studio & Visualizer](#3-using-the-chunking-studio--visualizer)
-  - [4. Using the Workspace RAG Scanner](#4-using-the-workspace-rag-scanner)
-  - [5. Using the Activity Bar Sidebar](#5-using-the-activity-bar-sidebar)
-- [⚡ Available Commands](#-available-commands)
-- [⚙️ Configuration Settings](#️-configuration-settings)
-- [📐 Chunking Strategy & Decision Guide](#-chunking-strategy--decision-guide)
-- [📁 Supported File Types](#-supported-file-types)
-- [🏗️ Decoupled Architecture](#️-decoupled-architecture)
-- [💻 Development, Testing & Packaging](#-development-testing--packaging)
-- [🗺️ Strategic Roadmap](#️-strategic-roadmap)
-- [🤝 Contributing](#-contributing)
-- [🔒 Security & Privacy](#-security--privacy)
-- [📄 License](#-license)
+  - [2. Document Inspector](#2-document-inspector)
+  - [3. Chunking Studio and Visualizer](#3-chunking-studio-and-visualizer)
+  - [4. Local Retrieval Simulator and Headroom Gauge](#4-local-retrieval-simulator-and-headroom-gauge)
+  - [5. Workspace Technology Scanner](#5-workspace-technology-scanner)
+  - [6. Activity Bar Sidebar](#6-activity-bar-sidebar)
+- [Available Commands](#available-commands)
+- [Configuration Settings](#configuration-settings)
+- [Chunking Strategy and Engineering Guide](#chunking-strategy-and-engineering-guide)
+- [Supported File Formats](#supported-file-formats)
+- [Decoupled Architecture](#decoupled-architecture)
+- [Development, Testing and Packaging](#development-testing-and-packaging)
+- [Strategic Roadmap](#strategic-roadmap)
+- [Contributing](#contributing)
+- [Security and Privacy](#security-and-privacy)
+- [License](#license)
 
 ---
 
-## 🌟 Key Highlights
+## Key Highlights
 
-- **100% Graphical User Interface (GUI)**: Inspect documents, adjust chunking parameters, explore segments, and scan projects without ever needing terminal commands.
-- **Privacy First & 100% Local**: Zero cloud dependencies, zero telemetry, zero external API keys. All parsing and chunking executes strictly on your local machine.
-- **Smart Boundary-Aware Chunking**: Splits text hierarchically at paragraph (`\n\n`), sentence (`. ! ?`), and word (`\s`) boundaries. Words are never truncated mid-token.
-- **Real-Time Visualizer & Search**: Step through chunks with keyboard shortcuts (`←`/`→`), jump to any index, and perform instant full-text searches with yellow `<mark>` highlighting.
-- **RAG Technology Scanner**: Automatically inspects project dependency manifests (`requirements.txt`, `package.json`, `pyproject.toml`) to identify vector databases, embedding engines, and RAG folders.
-- **Fast, Lightweight & Native**: Built with pure vanilla TypeScript and VS Code CSS custom variables. The entire packaged extension bundle is **under 100 KB**.
+- **Complete Graphical User Interface (GUI)**: Profile document metrics, slide chunk parameters, navigate partitions, and audit repository dependencies through an integrated visual workbench.
+- **Privacy First and Fully Local**: Zero network requests, zero telemetry, and zero third-party API dependencies. Every computation runs locally on your workstation.
+- **Hierarchical Boundary-Aware Chunking**: Intelligently segments prose along paragraph (`\n\n`), sentence (`. ! ?`), and word boundaries. Words and semantic clauses remain intact.
+- **Interactive Visualizer and In-Place Search**: Step through chunks sequentially with arrow keys, jump to arbitrary indices, and perform instant full-text searches with highlighted matches.
+- **RAG Stack Dependency Scanner**: Audits project dependency manifests (`requirements.txt`, `package.json`, `pyproject.toml`) and directory layouts to report vector databases, embedding engines, and RAG folders.
+- **Lightweight Footprint**: Constructed with vanilla TypeScript and native editor design tokens. The packaged extension distribution is under 100 KB.
 
 ---
 
-## 🖥️ Interactive GUI Feature Tour
+## Interactive GUI Feature Tour
 
-| Tab / View | Capabilities & Visual Elements |
+| Tab / View | Capabilities and Visual Elements |
 |---|---|
-| **📄 Document Inspector** | • Load files via disk picker, current editor tab, or scratchpad.<br>• Instant **Load Sample Document** button for immediate testing.<br>• Visual KPI cards for Characters, Words, Lines, Empty Lines, and Density.<br>• Estimated Tokens metric using industry-standard BPE heuristic (`~words × 1.3`).<br>• Health warnings (e.g. high empty line ratio alerts).<br>• One-click **Send to Chunking Studio** button. |
-| **🔪 Chunking Studio** | • Real-time interactive sliders & number inputs for **Chunk Size** (50–3,000) and **Overlap** (0–500).<br>• 1-click **Quick Presets**: Factoid (250/25), Standard RAG (500/50), Deep Context (1000/100).<br>• Live sanity validation (flags when overlap $\ge$ chunk size).<br>• Distribution summary: Total Chunks, Min/Avg/Max Characters, Words, and Tokens.<br>• Quality alert badges for small, oversized, or irregular chunks.<br>• Native **Save to File (.json)** export dialog. |
-| **👁️ Chunk Explorer** | • Navigation bar: `◀ Prev`, `Next ▶`, and `Chunk [ X ] of [ Total ]` jump input.<br>• Keyboard navigation: Arrow Left (`←`) and Arrow Right (`→`).<br>• Full-text search with instant `<mark>` highlight and match counter.<br>• Dynamic **Chunk Utilization Progress Bar** (color-coded green/yellow/red).<br>• **Overlap Context Continuity** pill showing exact shared characters with adjacent chunks.<br>• Metadata pills: character count, word count, token estimation, and start/end character offsets.<br>• Action buttons: **Copy Chunk**, **Copy All Chunks**, **Copy JSON**, **Save to File**. |
-| **🎯 Local Retrieval Simulator** | • Local Top-K retrieval testing using TF-IDF lexical similarity.<br>• Enter queries (e.g. *"What is pgvector?"*) to see the **Top-3 Ranked Chunks** with match percentage scores.<br>• 1-click jump to inspect any retrieved chunk in the visualizer.<br>• **LLM Context Headroom Gauge**: Computes total retrieved tokens and % utilization of 4K/8K context windows. |
-| **🔍 Workspace Scanner** | • Automated dependency scanner for project manifests (`requirements.txt`, `package.json`, `pyproject.toml`).<br>• **RAG Readiness Status**: Green pulse badge (`🟢 RAG Stack Active`) vs neutral badge.<br>• Category filter buttons: `All`, `Vector DBs`, `Embeddings`, `Orchestration`, and `Frameworks`.<br>• 1-click **Copy Report** button for sharing repository audit summaries.<br>• Visual RAG folder chip map (`documents/`, `embeddings/`, etc.). |
-| **📖 Guidelines Tab** | • ASCII RAG pipeline architectural diagram.<br>• Chunk sizing decision matrix (Small vs. Medium vs. Large).<br>• Overlap guidance (10–20% rule of thumb).<br>• Direct button to open the full [GUIDELINES.md](GUIDELINES.md) handbook in VS Code. |
+| **Document Inspector** | Load content via file picker, active editor tab, sample data, or custom scratchpad. Visual metric cards for Characters, Words, Lines, Empty Lines, and Lexical Density. Token estimation heuristic (~words x 1.3). Real-time formatting warnings and direct dispatch to the chunking workbench. |
+| **Chunking Studio** | Dynamic sliders and numeric steppers for Chunk Size (50-3,000) and Chunk Overlap (0-500). Quick presets for Factoid (250/25), Standard RAG (500/50), and Deep Context (1,000/100). Live parameter validation preventing overlap errors. Statistical distribution cards with Min, Average, and Max values. Direct JSON export to disk. |
+| **Chunk Explorer** | Sequential navigation controls (`Previous`, `Next`, index input, and left/right keyboard arrows). Real-time full-text search with marked keyword matches. Chunk utilization progress bar with green/yellow/red status indicators. Continuity badge displaying exact character overlap with adjoining chunks. Single-chunk, all-chunk, and JSON clipboard export. |
+| **Local Retrieval Simulator** | Top-K similarity engine running TF-IDF scoring across in-memory chunks. Enter arbitrary natural-language queries to inspect the Top-3 matching chunks with relevance percentages. One-click jump to review any match in the viewer. LLM Context Headroom Gauge tracking combined token load and percent consumption of 4K and 8K context windows. |
+| **Workspace Scanner** | Automatic scan of project manifests (`requirements.txt`, `package.json`, `pyproject.toml`). RAG readiness indicator with status pill. Category filters for Vector Databases, Embeddings, Orchestration, and Web Frameworks. Detected folder map (`documents/`, `embeddings/`, etc.) and formatted text report export. |
+| **Guidelines Tab** | Visual architectural ASCII diagram, chunk sizing decision matrix, overlap engineering formulas, and direct navigation to the comprehensive user handbook. |
 
 ---
 
-## 📖 How to Use Every Feature
+## Feature Usage Guide
 
 ### 1. Launching RAGLaB Studio
-RAGLaB can be opened in 3 convenient ways:
-- **Activity Bar Icon**: Click the **Beaker (`$(beaker)`)** icon on the left Activity Bar labeled **RAGLaB**, then click **`🚀 Open Full Studio`**.
-- **Command Palette**: Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS), type `RAGLaB`, and select **`RAGLaB: Open Studio Dashboard`**.
-- **Context Menu**: Right-click any document in the VS Code File Explorer or Editor and choose **`RAGLaB: Analyze Document`** or **`RAGLaB: Create Chunks`**.
+
+RAGLaB can be opened through three convenient entry points:
+- **Activity Bar Icon**: Click the beaker icon on the left Activity Bar labeled **RAGLaB**, then click **Launch Visual Workbench**.
+- **Command Palette**: Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS), search for `RAGLaB`, and select **RAGLaB: Open Studio Dashboard**.
+- **Context Menu**: Right-click any text-based document in your File Explorer or Editor and select **RAGLaB: Analyze Document** or **RAGLaB: Create Chunks**.
 
 ---
 
-### 2. Using the Document Inspector
-1. Click the **`📄 Document Inspector`** tab in RAGLaB Studio.
-2. Select your text input method:
-   - **`📂 Select File from Disk`**: Opens a native file dialog to choose any `.md`, `.txt`, `.json`, or `.csv` file.
-   - **`⚡ Load Active File`**: Instantly imports text from whatever file is currently active in your editor.
-   - **`📚 Load Sample Document`**: Instantly loads a comprehensive RAG pipeline reference document for testing without your own files.
-   - **`✍️ Scratchpad`**: Paste or write custom text into the multi-line text box and click **`🔍 Analyze Text`**.
-3. Review your Document Metrics:
-   - **Characters**: Exact raw character length.
-   - **Words**: Total words delimited by whitespace.
-   - **Estimated Tokens**: Calculated as `~words × 1.3` (clearly labeled as an approximation).
-   - **Lines & Empty Lines**: Total lines with breakdown of blank lines.
-   - **Avg Words/Line**: Lexical density metric.
-4. If the document has issues (e.g. >30% empty lines), a yellow warning banner will alert you.
-5. Click **`🚀 Send to Chunking Studio`** to transition directly into the chunking workbench with your document loaded.
+### 2. Document Inspector
+
+1. Open the **Document Inspector** tab in RAGLaB Studio.
+2. Select your preferred text input source:
+   - **Select File from Disk**: Opens a native file dialog to choose any `.md`, `.txt`, `.json`, or `.csv` file.
+   - **Load Active File**: Reads content directly from the file currently open in your editor.
+   - **Load Sample Document**: Populates the inspector with a pre-configured technical document on RAG architectures for immediate testing.
+   - **Scratchpad**: Type or paste arbitrary text directly into the scratchpad area and click **Analyze Text**.
+3. Review key document statistics:
+   - **Characters**: Exact character count.
+   - **Words**: Total words segmented by whitespace.
+   - **Estimated Tokens**: Word-based heuristic calculated as `~words x 1.3`.
+   - **Lines and Blank Lines**: Total line count alongside empty line distribution.
+   - **Average Words per Line**: Measure of textual density.
+4. If formatting issues are detected (e.g. excessive empty lines), a notification banner highlights recommendations.
+5. Click **Send to Chunking Studio** to transfer the parsed text directly into the chunking workbench.
 
 ---
 
-### 3. Using the Chunking Studio & Visualizer
-1. Click the **`🔪 Chunking Studio`** tab.
-2. Configure parameters using sliders, number inputs, or **Quick Presets**:
-   - **`⚡ Factoid (250 / 25)`**: Small chunks for strict fact lookups and high-precision Q&A.
-   - **`⚡ Standard RAG (500 / 50)`**: Balanced general-purpose chunks.
-   - **`⚡ Deep Context (1000 / 100)`**: Large chunks for narratives and summaries.
-   - Or manually customize **Chunk Size** (50–3,000) and **Chunk Overlap** (0–500).
-   - *Sanity Check*: If overlap is greater than or equal to chunk size, the GUI immediately displays an error banner preventing invalid runs.
-3. Click **`⚡ Generate Chunks`**.
-4. Examine the **Set Statistics**:
-   - Total Chunks generated.
-   - Min, Average, and Max for Characters, Words, and Estimated Tokens.
-   - Quality warnings (e.g. `⚠️ Very small chunk detected` if a chunk has < 50 characters).
-5. Explore Chunks in the **Chunk Viewer**:
-   - Use **`◀ Prev`** and **`Next ▶`** buttons or your keyboard arrow keys (`←`/`→`) to flip through chunks.
-   - Type a chunk number into `Chunk [ X ] of [ Total ]` to jump directly.
-   - In the **Search Box**, type any keyword:
-     - The match counter displays how many chunks contain the query.
-     - Matching terms are highlighted in yellow inside the chunk content in real time.
-   - Click **`📋 Copy`** to copy the current chunk to clipboard.
-   - Click **`📋 Copy All Chunks`** to copy all chunks formatted with delimiter headers.
-   - Click **`📋 Copy JSON`** to copy the entire structured dataset to clipboard.
-   - Click **`💾 Save to File (.json)`** to save the chunk dataset directly to a `.json` file in your workspace!
+### 3. Chunking Studio and Visualizer
+
+1. Open the **Chunking Studio** tab.
+2. Adjust configuration parameters using sliders, steppers, or one of the **Quick Presets**:
+   - **Factoid (250 / 25)**: Compact partitions optimized for precise entity lookups and FAQ matching.
+   - **Standard RAG (500 / 50)**: Balanced partitions suitable for general technical documentation and articles.
+   - **Deep Context (1000 / 100)**: Broad partitions for narrative prose, legal briefs, and summaries.
+   - Or set custom values for **Chunk Size** (50 to 3,000) and **Chunk Overlap** (0 to 500).
+   - *Parameter Validation*: If overlap equals or exceeds chunk size, an inline alert prevents execution until corrected.
+3. Click **Generate Chunks**.
+4. Examine the generated distribution:
+   - Total chunk count.
+   - Character, word, and token distribution (Min, Average, Max).
+   - Quality indicators flagging sub-sized or oversized segments.
+5. Inspect segments in the **Chunk Explorer**:
+   - Use **Previous** and **Next** buttons or keyboard arrow keys (`Left` / `Right`) to browse segments sequentially.
+   - Enter a target index into the chunk counter to jump directly.
+   - Enter terms into the search bar to highlight occurrences in yellow and view matching chunk totals.
+   - Use **Copy Chunk** for the active segment, **Copy All Chunks** for a concatenated overview, or **Save to File (.json)** to write the dataset directly to your workspace.
 
 ---
 
-### 4. Testing Local Retrieval & Context Headroom
-1. In the **Chunking Studio**, look directly below your chunk preview box to find the **Local Top-K Retrieval Simulator**.
-2. Enter any natural language inquiry (e.g., *"How does vector chunking work?"* or *"What is pgvector?"*).
-3. Click **`🔎 Retrieve Top-K`** or press `Enter`.
-4. Review the **Top-3 Ranked Chunks**:
-   - Each card displays its rank, chunk index, character/token count, and relevance match score.
-   - **Click any result** to jump directly to that chunk in the viewer with search terms highlighted!
-5. Check the **LLM Context Headroom Gauge**:
-   - Computes the combined token count of your Top-K retrieved chunks and tells you what percentage of standard 4K/8K context windows will be used, ensuring your prompt template and system instructions won't get cut off!
+### 4. Local Retrieval Simulator and Headroom Gauge
+
+Located beneath the chunk preview in the Chunking Studio:
+1. Enter a natural language query (for example: *"How does vector chunking preserve context?"*).
+2. Click **Retrieve Top-K** or press `Enter`.
+3. The local retrieval engine scores all chunks using TF-IDF and returns the **Top-3 Ranked Matches** with match percentages.
+4. Click any ranked match card to instantly navigate to that chunk in the explorer with matching terms highlighted.
+5. Review the **LLM Context Headroom Gauge**:
+   - Calculates the collective token footprint of retrieved chunks.
+   - Displays percentage consumption against standard 4K and 8K context windows, ensuring prompt templates and system directives have ample space.
 
 ---
 
-### 5. Using the Workspace RAG Scanner
-1. Click the **`🔍 Workspace Scanner`** tab.
-2. Click **`🔄 Scan Workspace`**.
-3. RAGLaB parses project manifests (`requirements.txt`, `package.json`, `pyproject.toml`) and root folders without executing any untrusted code.
-4. Review results:
-   - **Project Name & Root**: Basic repository identification.
-   - **RAG Status Badge**: `🟢 RAG Stack Active` if RAG dependencies exist, or `⚪ Standard Project` if none are found.
-   - **Category Filters**: Filter technologies by `All`, `Vector DBs`, `Embeddings`, `Orchestration`, or `Frameworks`.
-   - **Technology Cards**: Displays status pills:
-     - `✓ Detected` (green background + file source label)
-     - `○ Not found` (neutral gray badge)
-     - Covers: `pgvector`, `Chroma`, `FAISS`, `Qdrant`, `Pinecone`, `Weaviate`, `Milvus`, `PostgreSQL`, `Sentence Transformers`, `OpenAI`, `HuggingFace`, `LangChain`, `LlamaIndex`, `Haystack`, `FastAPI`, `Flask`, `Express`, `Python`, `TypeScript`.
-   - **RAG Directories**: Lists detected directories like `documents/`, `embeddings/`, `retrieval/`, `data/`, etc.
-   - **`📋 Copy Report`**: Copy the complete workspace diagnostic report to your clipboard with one click.
+### 5. Workspace Technology Scanner
+
+1. Open the **Workspace Scanner** tab.
+2. Click **Scan Workspace**.
+3. RAGLaB parses repository configuration manifests (`requirements.txt`, `package.json`, `pyproject.toml`) and directory trees safely without running code.
+4. Review findings:
+   - **RAG Readiness**: Displays an active status pill when vector databases, embedding engines, or orchestrators are detected.
+   - **Category Filters**: Filter cards by `All`, `Vector DBs`, `Embeddings`, `Orchestration`, or `Frameworks`.
+   - **Technology Cards**: Indicates detection status (`[Active]` with source filename vs `[Not Found]`).
+   - Supported technologies include: `pgvector`, `Chroma`, `FAISS`, `Qdrant`, `Pinecone`, `Weaviate`, `Milvus`, `PostgreSQL`, `Sentence Transformers`, `OpenAI`, `HuggingFace`, `LangChain`, `LlamaIndex`, `Haystack`, `FastAPI`, `Flask`, `Express`, `Python`, and `TypeScript`.
+   - **RAG Directories**: Highlights ingestion folders such as `documents/`, `embeddings/`, `retrieval/`, and `data/`.
+   - **Copy Report**: Copies the full repository audit summary to your clipboard.
 
 ---
 
-### 6. Using the Activity Bar Sidebar
-The RAGLaB Sidebar lives in the left VS Code Activity Bar:
-- Click **`🚀 Open Full Studio`** to open the unified multi-tab studio.
-- Click **`📄 Analyze Document`** for quick file metrics.
-- Click **`🔪 Create Chunks`** to prompt for chunk parameters and open the visualizer.
-- Click **`⚡ Quick Preview Active File`** to instantly chunk the open file using default settings.
-- Click **`🔍 Scan RAG Technologies`** to trigger a workspace scan.
+### 6. Activity Bar Sidebar
+
+The RAGLaB Sidebar lives in the primary Activity Bar:
+- **Launch Visual Workbench**: Opens the full multi-tab studio.
+- **Analyze Document Structure**: Prompts for a file and opens its structural profile.
+- **Partition & Chunk Document**: Opens chunking options for the selected file.
+- **Preview Active Document**: Generates an immediate chunk preview of the active editor file.
+- **Scan RAG Tech Stack**: Performs a workspace technology scan.
 
 ---
 
-## ⚡ Available Commands
+## Available Commands
 
-All commands are available via the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
+Every capability is accessible via the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 
 | Command | Identifier | Description |
 | :--- | :--- | :--- |
-| **RAGLaB: Open Studio Dashboard** | `ragHelper.openDashboard` | Open the unified interactive RAGLaB Studio webview |
-| **RAGLaB: Analyze Document** | `ragHelper.analyzeDocument` | Inspect file metrics and open in Document Inspector GUI |
-| **RAGLaB: Create Chunks** | `ragHelper.createChunks` | Chunk file with custom parameters and open in Chunking Studio |
-| **RAGLaB: Preview Chunks** | `ragHelper.previewChunks` | Quickly chunk the active editor file with default parameters |
-| **RAGLaB: Analyze Workspace** | `ragHelper.analyzeWorkspace` | Scan project dependencies and folder structure for RAG tech |
+| **RAGLaB: Open Studio Dashboard** | `ragHelper.openDashboard` | Opens the unified visual studio dashboard |
+| **RAGLaB: Analyze Document** | `ragHelper.analyzeDocument` | Profiles file metrics and loads them in the inspector |
+| **RAGLaB: Create Chunks** | `ragHelper.createChunks` | Partitions a document and opens the chunking studio |
+| **RAGLaB: Preview Chunks** | `ragHelper.previewChunks` | Quickly chunks active editor text using default parameters |
+| **RAGLaB: Analyze Workspace** | `ragHelper.analyzeWorkspace` | Audits workspace dependencies and folders for RAG components |
 
 ---
 
-## ⚙️ Configuration Settings
+## Configuration Settings
 
-Configure RAGLaB via VS Code Settings (`Ctrl+,` / `Cmd+,`) under **Extensions > RAGLaB**:
+Configure global defaults in VS Code Settings (`Ctrl+,` / `Cmd+,`) under **Extensions > RAGLaB**:
 
 | Setting | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `ragHelper.defaultChunkSize` | `number` | `500` | Default target chunk size in characters (min: 10, max: 10,000) |
-| `ragHelper.defaultChunkOverlap` | `number` | `50` | Default overlap between consecutive chunks (min: 0, max: 5,000) |
-| `ragHelper.showNotifications` | `boolean` | `true` | Show status notification toast alerts |
+| `ragHelper.defaultChunkSize` | `number` | `500` | Default chunk size in characters (minimum: 10, maximum: 10,000) |
+| `ragHelper.defaultChunkOverlap` | `number` | `50` | Default overlap between adjacent chunks (minimum: 0, maximum: 5,000) |
+| `ragHelper.showNotifications` | `boolean` | `true` | Show status notification banners on operations |
 | `ragHelper.maxFileSize` | `number` | `5242880` | Maximum file size in bytes allowed for analysis (default: 5 MB) |
 
 ---
 
-## 📐 Chunking Strategy & Decision Guide
+## Chunking Strategy and Engineering Guide
 
 ### Recursive Hierarchical Splitting
-RAGLaB implements a recursive boundary algorithm:
+
+RAGLaB processes source text using recursive natural-language boundaries:
 
 ```
-Raw Document Text
-  │
-  ├─► 1. Split at Paragraph Boundaries (\n\n)
-  │      └─► Fits in target size? Keep paragraph intact.
-  │
-  ├─► 2. Split at Sentence Boundaries (. ! ? \n)
-  │      └─► Fits in target size? Keep sentence intact.
-  │
-  └─► 3. Split at Word Boundaries (whitespace)
-         └─► Prevents mid-word truncation (never cuts words in half).
+Raw Text Input
+  |
+  +--> 1. Paragraph Boundaries (\n\n)
+  |      Preserves thematic sections when length fits within target size.
+  |
+  +--> 2. Sentence Boundaries (. ! ? \n)
+  |      Preserves grammatical completeness when paragraphs exceed target size.
+  |
+  +--> 3. Word Boundaries (whitespace)
+         Prevents mid-token truncation so words are never severed.
 ```
 
 ### Chunk Sizing Decision Matrix
 
-| Target Size | Approx Tokens | Best Use Case | Trade-offs |
+| Target Size | Estimated Tokens | Recommended Application | Architectural Considerations |
 |---|---|---|---|
-| **Small (100–300 chars)** | 25–75 tokens | Strict sentence matching, FAQ lookup, entity extraction | ➕ High precision, low noise<br>➖ Lacks surrounding narrative context |
-| **Medium (500–1,000 chars)** | 125–250 tokens | Technical manuals, knowledge base articles, general Q&A | ➕ Balanced context and vector specificity<br>⭐ **Recommended default** |
-| **Large (1,200–2,500 chars)** | 300–600 tokens | Summarization, legal documents, thematic reasoning | ➕ Rich context<br>➖ May dilute vector similarity search |
+| **Small (100-300 chars)** | 25-75 tokens | Fact extraction, FAQ matching, targeted entity lookup | High vector specificity with low noise; reduced surrounding context. |
+| **Medium (500-1,000 chars)** | 125-250 tokens | Technical manuals, knowledge base articles, standard Q&A | Balanced context retention and vector search precision (standard baseline). |
+| **Large (1,200-2,500 chars)** | 300-600 tokens | Thematic summaries, contracts, legal analysis | Broad context retention; potential dilution of vector similarity scores. |
 
-### Overlap Rule of Thumb
-- Always configure an overlap between **10% and 20%** of your chunk size (e.g. 50 characters for a 500-character chunk).
-- Overlap ensures that thoughts, named entities, and clauses spanning across chunk boundaries are retained in both retrieval units.
+### Overlap Engineering Guidelines
+- Maintain an overlap ratio between **10% and 20%** of your target chunk size (for example, 50 characters for a 500-character chunk).
+- Overlap guarantees that compound ideas, dependent clauses, and entities spanning chunk cutoffs remain represented in adjacent retrieval units.
 
 ---
 
-## 📁 Supported File Types
+## Supported File Formats
 
-RAGLaB supports standard unstructured and semi-structured formats:
-
-| Format | Extension | Common Use Case in RAG |
+| Format | Extension | Common RAG Application |
 | :--- | :--- | :--- |
-| **Markdown** | `.md` | Technical documentation, GitHub READMEs, knowledge bases |
-| **Plain Text**| `.txt` | Unstructured raw text, customer service transcripts, meeting notes |
-| **JSON** | `.json` | Exported chat history, conversational datasets, structured dumps |
-| **CSV** | `.csv` | Tabular datasets, catalogs, tabular knowledge rows |
+| **Markdown** | `.md` | Technical documentation, developer guides, README files |
+| **Plain Text** | `.txt` | Unstructured source notes, logs, customer transcripts |
+| **JSON** | `.json` | Chat logs, structured conversational exports, entity dumps |
+| **CSV** | `.csv` | Tabular datasets, catalog inventories, tabular rows |
 
 ---
 
-## 🏗️ Decoupled Architecture
+## Decoupled Architecture
 
-RAGLaB is built with a strictly decoupled architecture:
+RAGLaB follows a modular separation of concerns:
 
 ```
 src/
-├── extension.ts          # Entry point and lifecycle activations
-├── commands/             # VS Code command bridges (GUI launchers & output channels)
-│   ├── analyzeDocument.ts
-│   ├── createChunks.ts
-│   ├── previewChunks.ts
-│   ├── analyzeWorkspace.ts
-│   └── openDashboard.ts
-├── services/             # Pure business logic (zero VS Code UI dependencies)
-│   ├── documentAnalyzer.ts
-│   ├── chunkingService.ts
-│   ├── statisticsService.ts
-│   └── workspaceAnalyzer.ts
-├── models/               # TypeScript data schemas and interface contracts
-│   └── types.ts
-├── utils/                # Pure utility helpers
-│   ├── textUtils.ts      # Word/line/token heuristics and HTML escaping
-│   └── fileUtils.ts      # Safe file reading and size validation
-├── views/                # Activity Bar sidebar provider
-│   └── sidebarProvider.ts
-└── webview/              # Webview panels, HTML templates, and GUI controllers
-    ├── dashboardPanel.ts
-    ├── chunkViewerPanel.ts
-    └── templates/
-        ├── dashboard.ts
-        └── chunkViewer.ts
+|-- extension.ts             # Entry point and subscription lifecycle
+|-- commands/                # Command bridges between VS Code and workbench panels
+|   |-- analyzeDocument.ts
+|   |-- createChunks.ts
+|   |-- previewChunks.ts
+|   |-- analyzeWorkspace.ts
+|   +-- openDashboard.ts
+|-- services/                # Pure business logic isolated from UI concerns
+|   |-- documentAnalyzer.ts  # Lexical and token calculation
+|   |-- chunkingService.ts   # Boundary-aware text partitioning
+|   |-- statisticsService.ts # Distribution mathematics
+|   +-- workspaceAnalyzer.ts # Manifest parsing and folder audit
+|-- models/                  # TypeScript interface contracts
+|   +-- types.ts
+|-- utils/                   # Pure helper functions
+|   |-- textUtils.ts         # Formatting, token heuristics, and HTML escaping
+|   +-- fileUtils.ts         # File system operations and size limits
+|-- views/                   # Activity Bar sidebar implementation
+|   +-- sidebarProvider.ts
++-- webview/                 # Studio panels, scripts, and layout controllers
+    |-- dashboardPanel.ts
+    |-- chunkViewerPanel.ts
+    +-- templates/
+        |-- dashboard.ts
+        +-- chunkViewer.ts
 ```
-
-For comprehensive architectural design diagrams, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
-## 💻 Development, Testing & Packaging
+## Development, Testing and Packaging
 
-### Prerequisites
+### Environment Prerequisites
 - **Node.js**: `>= 18.0.0`
 - **npm**: `>= 9.0.0`
 - **VS Code**: `>= 1.85.0`
 
-### Build & Run Locally
+### Build and Verification Commands
 ```bash
-# 1. Clone repository
+# Clone repository
 git clone https://github.com/aroshwijesinghe/RAGLab.git
 cd RAGLab
 
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Compile the extension
+# Compile TypeScript bundle
 npm run compile
 
-# 4. Run the automated test suite (52 unit tests)
+# Run automated unit test suite (52 tests)
 npm test
 
-# 5. Package as redistributable VSIX
-npm run package
+# Package VSIX distribution bundle
+npx vsce package --no-dependencies
 ```
 
-To run and debug the extension live, press `F5` in VS Code to launch the **Extension Development Host**.
+Press `F5` in VS Code to start the Extension Development Host and debug live.
 
 ---
 
-## 🗺️ Strategic Roadmap
+## Strategic Roadmap
 
 - [x] **V0.1 (Current)**:
-  - Document analysis with character, word, line, and estimated token counts.
-  - Smart boundary-aware chunking with sliding overlap.
-  - Unified interactive RAGLaB Studio webview.
-  - Full-text chunk search with `<mark>` match highlighting.
-  - Workspace RAG technology and directory scanner.
-  - Activity Bar sidebar view with 1-click launch.
-- [ ] **V0.2 (Planned)**:
-  - Local ONNX-based embedding generation.
-  - Live similarity search between chunks.
-  - Embedding dimension analysis and token-cost estimator.
+  - Document profiling with character, word, line, and token metrics.
+  - Smart boundary-aware chunk partitioning with sliding overlap.
+  - Interactive multi-tab RAGLaB Studio webview with official branding.
+  - Real-time full-text search with marked match highlights.
+  - Workspace technology scanner and folder audit.
+  - Activity Bar sidebar view with immediate launch controls.
+  - Local TF-IDF retrieval simulator and LLM context headroom gauge.
+- [ ] **V0.2 (Upcoming)**:
+  - Local ONNX-powered vector embedding generation.
+  - Cosine similarity matrix between adjacent chunks.
+  - Embedding dimension analysis and token cost calculator.
 - [ ] **V0.3 (Planned)**:
-  - PostgreSQL + `pgvector` live database integration.
-  - Index management and interactive query tester.
+  - PostgreSQL + pgvector live database connection manager.
+  - Interactive SQL vector query runner.
 - [ ] **V0.4 (Planned)**:
-  - RAG retrieval simulation and precision/recall scoring.
-  - Context window headroom gauge.
+  - Synthetic evaluation of retrieval precision and recall.
+  - End-to-end prompt assembly preview.
 - [ ] **V1.0 (Vision)**:
-  - Multi-vector database support and automated pipeline diagnostics.
-
-See [ROADMAP.md](ROADMAP.md) for full milestone details.
+  - Multi-vector database connector and automated pipeline optimization.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are warmly welcomed!
+Contributions are welcomed:
 1. Fork the repository on GitHub.
-2. Create your feature branch (`git checkout -b feature/my-feature`).
-3. Ensure all tests pass (`npm test`).
-4. Commit following conventional commit rules (`git commit -m "feat: add support for custom delimiters"`).
-5. Push to your branch and open a Pull Request.
+2. Create a feature branch (`git checkout -b feature/boundary-enhancement`).
+3. Verify all automated tests pass (`npm test`).
+4. Commit using conventional commit format (`git commit -m "feat: enhance sentence splitting for abbreviations"`).
+5. Push to your branch and submit a Pull Request.
 
 ---
 
-## 🔒 Security & Privacy
+## Security and Privacy
 
-- **100% Local**: All processing occurs strictly inside your local VS Code extension host.
-- **Zero Network Calls**: Documents, text snippets, and project metadata are never transmitted to external servers.
-- **Zero Telemetry**: No analytics or tracking scripts are included.
-- **Safe File Access**: Read-only operations by default; user documents are never modified or overwritten.
+- **100% Local Execution**: All computations execute inside the local VS Code extension process.
+- **Zero External Network Requests**: Content and project structures are never transmitted externally.
+- **Zero Telemetry**: No tracking scripts, analytics, or behavioral cookies are present.
+- **Read-Only Operations**: File operations are strictly read-only by default; source files are never altered without user confirmation.
 
 ---
 
-## 📄 License
+## License
 
-Distributed under the **MIT License**. See [LICENSE](LICENSE) for details.
+Distributed under the **MIT License**. See [LICENSE](LICENSE) for terms.

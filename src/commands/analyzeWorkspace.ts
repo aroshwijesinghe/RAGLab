@@ -70,8 +70,8 @@ export async function analyzeWorkspaceCommand(extensionUri?: vscode.Uri): Promis
 
         outputChannel.appendLine('');
         const assessment = analysis.isLikelyRagProject 
-          ? '🟢 This project contains components of a RAG pipeline.' 
-          : '⚪ This does not appear to have an active RAG stack.';
+          ? '[Active] This project contains components of a RAG pipeline.' 
+          : '[Inactive] This does not appear to have an active RAG stack.';
         outputChannel.appendLine(`  Assessment: ${assessment}`);
         outputChannel.appendLine('════════════════════════════════════════════════════');
 

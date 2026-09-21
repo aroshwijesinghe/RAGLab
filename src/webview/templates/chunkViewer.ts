@@ -12,8 +12,8 @@ export function getChunkViewerHtml(
     let warningsHtml = '';
     if (chunkResult.warnings && chunkResult.warnings.length > 0) {
         const warningItems = chunkResult.warnings.map(w => {
-            const icon = w.severity === 'error' ? '❌' : (w.severity === 'warning' ? '⚠️' : 'ℹ️');
-            return `<div class="warning-item ${w.severity}">${icon} ${escapeHtml(w.message)} ${w.chunkIndex !== undefined ? `(Chunk ${w.chunkIndex})` : ''}</div>`;
+            const tag = w.severity === 'error' ? '[Error]' : (w.severity === 'warning' ? '[Warning]' : '[Notice]');
+            return `<div class="warning-item ${w.severity}"><span style="font-weight:600; margin-right:4px;">${tag}</span> ${escapeHtml(w.message)} ${w.chunkIndex !== undefined ? `(Chunk ${w.chunkIndex})` : ''}</div>`;
         }).join('');
         warningsHtml = `<div class="warnings-section">${warningItems}</div>`;
     }

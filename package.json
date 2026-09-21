@@ -30,6 +30,7 @@
     "onView:ragHelper.sidebar"
   ],
   "main": "./dist/extension.js",
+  "icon": "resources/logo.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/aroshwijesinghe/RAGLab"

@@ -270,8 +270,9 @@ export class DashboardPanel {
   private _update(initialState?: DashboardInitialState): void {
     const webview = this._panel.webview;
     const nonce = getNonce();
+    const logoUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'resources', 'logo.png')).toString();
     this._panel.title = 'RAGLaB Studio';
-    this._panel.webview.html = getDashboardHtml(nonce, webview.cspSource, initialState);
+    this._panel.webview.html = getDashboardHtml(nonce, webview.cspSource, initialState, logoUri);
   }
 
   public dispose(): void {

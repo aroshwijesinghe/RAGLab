@@ -13,23 +13,28 @@ export interface DashboardInitialState {
 export function getDashboardHtml(
   nonce: string,
   cspSource: string,
-  initialState?: DashboardInitialState
+  initialState?: DashboardInitialState,
+  logoUri?: string
 ): string {
   const stateJson = JSON.stringify(initialState || {});
+  const logoTag = logoUri
+    ? `<img src="${logoUri}" alt="RAGLaB" class="brand-logo-img" />`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${cspSource} 'nonce-${nonce}'; script-src 'nonce-${nonce}';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${cspSource} 'nonce-${nonce}'; script-src 'nonce-${nonce}'; img-src ${cspSource} data:;">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RAGLaB Studio</title>
   <style nonce="${nonce}">
     :root {
       --card-bg: var(--vscode-editor-background);
-      --border-color: var(--vscode-panel-border, rgba(128, 128, 128, 0.25));
-      --header-bg: rgba(128, 128, 128, 0.08);
+      --border-color: var(--vscode-panel-border, rgba(128, 128, 128, 0.22));
+      --header-bg: rgba(128, 128, 128, 0.06);
       --accent-color: var(--vscode-button-background, #0e639c);
+      --accent-hover: var(--vscode-button-hoverBackground, #1177bb);
       --success-color: #388a34;
       --warning-color: #cca700;
       --error-color: #f48771;
@@ -54,7 +59,7 @@ export function getDashboardHtml(
       overflow: hidden;
     }
 
-    /* Top Brand Bar */
+    /* Brand Header */
     .brand-header {
       display: flex;
       justify-content: space-between;
@@ -68,7 +73,25 @@ export function getDashboardHtml(
     .brand-title {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+    }
+
+    .brand-logo-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      transition: transform 0.25s ease;
+    }
+
+    .brand-logo-img:hover {
+      transform: scale(1.05) rotate(-2deg);
+    }
+
+    .brand-text-group {
+      display: flex;
+      flex-direction: column;
     }
 
     .brand-title h1 {
@@ -76,15 +99,19 @@ export function getDashboardHtml(
       font-weight: 700;
       letter-spacing: 0.5px;
       color: var(--vscode-editor-foreground);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .brand-badge {
       background: var(--vscode-badge-background, #4d4d4d);
       color: var(--vscode-badge-foreground, #ffffff);
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 12px;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
       font-weight: 600;
+      letter-spacing: 0.3px;
     }
 
     .brand-subtitle {
@@ -95,7 +122,7 @@ export function getDashboardHtml(
     /* Navigation Tabs */
     .tab-bar {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       border-bottom: 1px solid var(--border-color);
       margin-bottom: 16px;
       flex-shrink: 0;
@@ -113,12 +140,12 @@ export function getDashboardHtml(
       display: flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.15s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .tab-button:hover {
       color: var(--vscode-editor-foreground);
-      background: rgba(128, 128, 128, 0.06);
+      background: rgba(128, 128, 128, 0.07);
     }
 
     .tab-button.active {
@@ -127,7 +154,7 @@ export function getDashboardHtml(
       font-weight: 600;
     }
 
-    /* Tab Content Panels */
+    /* Tab Content Area */
     .tab-container {
       flex: 1;
       overflow-y: auto;
@@ -138,16 +165,22 @@ export function getDashboardHtml(
       display: none;
       flex-direction: column;
       gap: 16px;
-      animation: fadeIn 0.15s ease-in-out;
     }
 
     .tab-panel.active {
       display: flex;
+      animation: tabSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(2px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes tabSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Common Card Styles */
@@ -159,12 +192,19 @@ export function getDashboardHtml(
       display: flex;
       flex-direction: column;
       gap: 12px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(128, 128, 128, 0.35);
     }
 
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .card-title {
@@ -187,26 +227,35 @@ export function getDashboardHtml(
       cursor: pointer;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
-      transition: background-color 0.15s;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .btn:hover {
       background-color: var(--vscode-button-hoverBackground);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    }
+
+    .btn:active {
+      transform: translateY(0) scale(0.98);
     }
 
     .btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
 
     .btn-secondary {
-      background-color: var(--vscode-button-secondaryBackground, rgba(128, 128, 128, 0.2));
+      background-color: var(--vscode-button-secondaryBackground, rgba(128, 128, 128, 0.16));
       color: var(--vscode-button-secondaryForeground, var(--vscode-editor-foreground));
     }
 
     .btn-secondary:hover {
-      background-color: var(--vscode-button-secondaryHoverBackground, rgba(128, 128, 128, 0.3));
+      background-color: var(--vscode-button-secondaryHoverBackground, rgba(128, 128, 128, 0.26));
     }
 
     /* KPI Grid */
@@ -223,6 +272,11 @@ export function getDashboardHtml(
       padding: 10px 14px;
       display: flex;
       flex-direction: column;
+      transition: transform 0.18s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
     }
 
     .kpi-label {
@@ -275,6 +329,12 @@ export function getDashboardHtml(
       padding: 6px 10px;
       font-size: 12px;
       font-family: inherit;
+      transition: border-color 0.15s ease;
+    }
+
+    input[type="number"]:focus, input[type="text"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--vscode-focusBorder, var(--accent-color));
     }
 
     input[type="range"] {
@@ -298,6 +358,7 @@ export function getDashboardHtml(
       align-items: center;
       gap: 8px;
       border-left: 3px solid;
+      animation: tabSlideUp 0.2s ease;
     }
 
     .warning-box.warning {
@@ -349,7 +410,7 @@ export function getDashboardHtml(
     .chunk-util-bar {
       height: 100%;
       background: var(--accent-color);
-      transition: width 0.2s ease;
+      transition: width 0.35s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.3s ease;
     }
 
     .chunk-badges {
@@ -395,13 +456,13 @@ export function getDashboardHtml(
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .retrieval-card:hover {
       border-color: var(--accent-color);
       background: rgba(14, 99, 156, 0.08);
-      transform: translateX(2px);
+      transform: translateX(4px);
     }
 
     /* Technology Grid */
@@ -419,7 +480,11 @@ export function getDashboardHtml(
       justify-content: space-between;
       align-items: center;
       background: var(--card-bg);
-      transition: all 0.15s;
+      transition: all 0.18s ease;
+    }
+
+    .tech-card:hover {
+      transform: translateY(-1px);
     }
 
     .tech-card.detected {
@@ -448,19 +513,38 @@ export function getDashboardHtml(
       font-weight: 600;
       padding: 2px 8px;
       border-radius: 12px;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
     }
 
     .status-pill.yes {
       background: rgba(56, 138, 52, 0.2);
       color: #73c991;
     }
+    .status-pill.yes .status-dot {
+      background: #73c991;
+      animation: pulseDot 1.8s infinite ease-in-out;
+    }
 
     .status-pill.no {
       background: rgba(128, 128, 128, 0.15);
       color: var(--vscode-descriptionForeground);
+    }
+    .status-pill.no .status-dot {
+      background: var(--vscode-descriptionForeground);
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
     }
 
     /* Directory Chips */
@@ -506,18 +590,13 @@ export function getDashboardHtml(
       gap: 10px;
     }
 
-    .empty-icon {
-      font-size: 28px;
-      opacity: 0.7;
-    }
-
     .preset-btn {
-      padding: 3px 8px;
+      padding: 4px 10px;
       font-size: 11px;
     }
 
     .filter-btn {
-      padding: 2px 8px;
+      padding: 3px 10px;
       font-size: 11px;
       border-radius: 12px;
     }
@@ -532,21 +611,23 @@ export function getDashboardHtml(
   <!-- Brand Header -->
   <div class="brand-header">
     <div class="brand-title">
-      <h1>🧪 RAGLaB Studio</h1>
-      <span class="brand-badge">v0.1.0</span>
-      <span class="brand-subtitle">Interactive RAG Pipeline &amp; Chunking Workbench</span>
+      ${logoTag}
+      <div class="brand-text-group">
+        <h1>RAGLaB Studio <span class="brand-badge">v0.1.0</span></h1>
+        <span class="brand-subtitle">Interactive RAG Pipeline &amp; Chunking Workbench</span>
+      </div>
     </div>
     <div style="display: flex; gap: 8px;">
-      <button class="btn btn-secondary" id="btn-open-guide-header">📖 Guidelines Handbook</button>
+      <button class="btn btn-secondary" id="btn-open-guide-header">Guidelines Handbook</button>
     </div>
   </div>
 
   <!-- Tab Bar -->
   <div class="tab-bar">
-    <button class="tab-button active" data-tab="document">📄 Document Inspector</button>
-    <button class="tab-button" data-tab="chunking">🔪 Chunking Studio</button>
-    <button class="tab-button" data-tab="workspace">🔍 Workspace Scanner</button>
-    <button class="tab-button" data-tab="guidelines">📖 RAG Guidelines</button>
+    <button class="tab-button active" data-tab="document">Document Inspector</button>
+    <button class="tab-button" data-tab="chunking">Chunking Studio</button>
+    <button class="tab-button" data-tab="workspace">Workspace Scanner</button>
+    <button class="tab-button" data-tab="guidelines">Guidelines &amp; Flow</button>
   </div>
 
   <!-- Tab Content Area -->
@@ -555,20 +636,20 @@ export function getDashboardHtml(
     <div class="tab-panel active" id="tab-document">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">📄 Document Source</div>
+          <div class="card-title">Document Source</div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="btn" id="btn-pick-file">📂 Select File from Disk</button>
-            <button class="btn btn-secondary" id="btn-load-active-editor">⚡ Load Active File</button>
-            <button class="btn btn-secondary" id="btn-load-sample-doc">📚 Load Sample Document</button>
+            <button class="btn" id="btn-pick-file">Select File from Disk</button>
+            <button class="btn btn-secondary" id="btn-load-active-editor">Load Active File</button>
+            <button class="btn btn-secondary" id="btn-load-sample-doc">Load Sample Document</button>
           </div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <div class="form-label">Or Paste / Type Text to Inspect:</div>
-          <textarea id="doc-text-input" placeholder="Paste document text here or choose a file above to inspect characters, words, and estimated tokens..."></textarea>
+          <div class="form-label">Or Paste Document Text Below:</div>
+          <textarea id="doc-text-input" placeholder="Paste document content here or choose a file above to inspect characters, words, and estimated tokens..."></textarea>
           <div style="display: flex; justify-content: flex-end; gap: 8px;">
-            <button class="btn btn-secondary" id="btn-analyze-custom-text">🔍 Analyze Text</button>
-            <button class="btn" id="btn-send-to-chunking" disabled>🚀 Send to Chunking Studio</button>
+            <button class="btn btn-secondary" id="btn-analyze-custom-text">Analyze Text</button>
+            <button class="btn" id="btn-send-to-chunking" disabled>Send to Chunking Studio</button>
           </div>
         </div>
       </div>
@@ -589,7 +670,7 @@ export function getDashboardHtml(
           <div class="kpi-card">
             <span class="kpi-label">Characters</span>
             <span class="kpi-value" id="kpi-chars">0</span>
-            <span class="kpi-note">Total length</span>
+            <span class="kpi-note">Total character count</span>
           </div>
           <div class="kpi-card">
             <span class="kpi-label">Words</span>
@@ -599,7 +680,7 @@ export function getDashboardHtml(
           <div class="kpi-card">
             <span class="kpi-label">Estimated Tokens</span>
             <span class="kpi-value" id="kpi-tokens">~0</span>
-            <span class="kpi-note">Formula: words × 1.3</span>
+            <span class="kpi-note">Heuristic: words * 1.3</span>
           </div>
           <div class="kpi-card">
             <span class="kpi-label">Total Lines</span>
@@ -609,7 +690,7 @@ export function getDashboardHtml(
           <div class="kpi-card">
             <span class="kpi-label">Avg Words / Line</span>
             <span class="kpi-value" id="kpi-avg-words-line">0</span>
-            <span class="kpi-note">Density metric</span>
+            <span class="kpi-note">Lexical density</span>
           </div>
         </div>
       </div>
@@ -619,8 +700,8 @@ export function getDashboardHtml(
     <div class="tab-panel" id="tab-chunking">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🔪 Chunk Configuration</div>
-          <button class="btn" id="btn-run-chunking">⚡ Generate Chunks</button>
+          <div class="card-title">Chunk Configuration</div>
+          <button class="btn" id="btn-run-chunking">Generate Chunks</button>
         </div>
 
         <div class="form-row">
@@ -648,9 +729,9 @@ export function getDashboardHtml(
 
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
           <span class="form-label">Quick Presets:</span>
-          <button class="btn btn-secondary preset-btn" id="preset-small">⚡ Factoid (250 / 25)</button>
-          <button class="btn btn-secondary preset-btn" id="preset-medium">⚡ Standard RAG (500 / 50)</button>
-          <button class="btn btn-secondary preset-btn" id="preset-large">⚡ Deep Context (1000 / 100)</button>
+          <button class="btn btn-secondary preset-btn" id="preset-small">Factoid (250 / 25)</button>
+          <button class="btn btn-secondary preset-btn" id="preset-medium">Standard RAG (500 / 50)</button>
+          <button class="btn btn-secondary preset-btn" id="preset-large">Deep Context (1000 / 100)</button>
         </div>
 
         <div id="chunk-config-error" style="display: none;" class="warning-box error"></div>
@@ -659,11 +740,11 @@ export function getDashboardHtml(
       <!-- Chunk Results Card -->
       <div class="card" id="chunk-results-card" style="display: none;">
         <div class="card-header">
-          <div class="card-title">📊 Chunk Set Statistics</div>
+          <div class="card-title">Chunk Set Statistics</div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="btn btn-secondary" id="btn-copy-all-chunks">📋 Copy All Chunks</button>
-            <button class="btn btn-secondary" id="btn-export-chunks-json">📋 Copy JSON</button>
-            <button class="btn" id="btn-save-chunks-file">💾 Save to File (.json)</button>
+            <button class="btn btn-secondary" id="btn-copy-all-chunks">Copy All Chunks</button>
+            <button class="btn btn-secondary" id="btn-export-chunks-json">Copy JSON</button>
+            <button class="btn" id="btn-save-chunks-file">Save to File (.json)</button>
           </div>
         </div>
 
@@ -696,22 +777,22 @@ export function getDashboardHtml(
         <div class="chunk-preview-box">
           <div class="chunk-preview-header">
             <div style="display: flex; align-items: center; gap: 10px;">
-              <button class="btn btn-secondary" id="btn-prev-chunk" disabled>◀ Prev</button>
+              <button class="btn btn-secondary" id="btn-prev-chunk" disabled>Previous</button>
               <span>Chunk <input type="number" id="input-chunk-jump" value="1" min="1" max="1" style="width: 50px; text-align: center;"> of <span id="label-total-chunks-nav">1</span></span>
-              <button class="btn btn-secondary" id="btn-next-chunk">Next ▶</button>
+              <button class="btn btn-secondary" id="btn-next-chunk">Next</button>
             </div>
 
             <div class="chunk-badges">
               <span class="badge-pill" id="badge-current-chars">0 chars</span>
               <span class="badge-pill" id="badge-current-words">0 words</span>
               <span class="badge-pill" id="badge-current-tokens">~0 tokens</span>
-              <span class="badge-pill" id="badge-current-offsets">Offsets: 0 → 0</span>
+              <span class="badge-pill" id="badge-current-offsets">Offsets: 0 -> 0</span>
             </div>
 
             <div style="display: flex; align-items: center; gap: 8px;">
               <input type="text" id="input-chunk-search" placeholder="Filter/Search chunks..." style="width: 170px;">
               <span id="search-matches-pill" style="font-size: 11px; color: var(--vscode-descriptionForeground);"></span>
-              <button class="btn" id="btn-copy-current-chunk">📋 Copy</button>
+              <button class="btn" id="btn-copy-current-chunk">Copy Chunk</button>
             </div>
           </div>
 
@@ -724,29 +805,28 @@ export function getDashboardHtml(
           </div>
 
           <div id="chunk-overlap-notice" style="font-size: 11px; padding: 6px 12px; background: rgba(117,190,255,0.08); border-top: 1px solid var(--border-color); color: var(--vscode-descriptionForeground);">
-            🔗 Overlap Continuity: Calculating...
+            Context Continuity: Ready
           </div>
         </div>
 
         <!-- Local Retrieval Simulator Card -->
         <div class="card" id="retrieval-sim-card" style="margin-top: 8px;">
           <div class="card-header">
-            <div class="card-title">🎯 Local Top-K Retrieval Simulator</div>
+            <div class="card-title">Local Retrieval Simulator</div>
             <span class="badge-pill" id="badge-headroom">Headroom: 100% free</span>
           </div>
           <div style="font-size: 12px; color: var(--vscode-descriptionForeground);">
-            Test how your chunking strategy performs against realistic user queries using local lexical relevance scoring.
+            Test how your chunking configuration retrieves context against realistic user queries using local lexical relevance scoring.
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
             <input type="text" id="input-sim-query" placeholder="Enter query (e.g. 'How does vector chunking work?')..." style="flex: 1;">
-            <button class="btn" id="btn-run-sim">🔎 Retrieve Top-K</button>
+            <button class="btn" id="btn-run-sim">Retrieve Top Chunks</button>
           </div>
           <div id="sim-results-container" style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;"></div>
         </div>
       </div>
 
       <div class="empty-state" id="chunk-empty-state">
-        <div class="empty-icon">🔪</div>
         <div style="font-weight: 600;">No chunks generated yet</div>
         <div style="max-width: 400px; font-size: 12px;">Load a document from the Document Inspector tab or click <strong>Load Sample Document</strong>, then click <strong>Generate Chunks</strong>.</div>
       </div>
@@ -756,11 +836,11 @@ export function getDashboardHtml(
     <div class="tab-panel" id="tab-workspace">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🔍 RAG Technology Scanner</div>
-          <button class="btn" id="btn-scan-workspace">🔄 Scan Workspace</button>
+          <div class="card-title">RAG Technology Scanner</div>
+          <button class="btn" id="btn-scan-workspace">Scan Workspace</button>
         </div>
         <div style="color: var(--vscode-descriptionForeground); font-size: 12px;">
-          RAGLaB scans your project configuration (<code>requirements.txt</code>, <code>package.json</code>, <code>pyproject.toml</code>) and directory structure to detect vector databases, embedding engines, orchestration frameworks, and storage.
+          RAGLaB scans your project configuration (<code>requirements.txt</code>, <code>package.json</code>, <code>pyproject.toml</code>) and directory layout to detect vector databases, embedding engines, orchestration frameworks, and storage.
         </div>
       </div>
 
@@ -771,7 +851,7 @@ export function getDashboardHtml(
             <div style="font-size: 16px; font-weight: 700;" id="ws-project-name">Project Name</div>
             <div style="font-size: 11px; color: var(--vscode-descriptionForeground);" id="ws-root-path">Path</div>
           </div>
-          <span class="status-pill yes" id="ws-rag-status">🟢 RAG Stack Active</span>
+          <span class="status-pill yes" id="ws-rag-status"><span class="status-dot"></span> RAG Stack Detected</span>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
@@ -782,7 +862,7 @@ export function getDashboardHtml(
             <button class="btn btn-secondary filter-btn" data-filter="embedding">Embeddings</button>
             <button class="btn btn-secondary filter-btn" data-filter="orchestration">Orchestration</button>
             <button class="btn btn-secondary filter-btn" data-filter="framework">Frameworks</button>
-            <button class="btn btn-secondary filter-btn" id="btn-copy-ws-report">📋 Copy Report</button>
+            <button class="btn btn-secondary filter-btn" id="btn-copy-ws-report">Copy Report</button>
           </div>
         </div>
 
@@ -793,7 +873,6 @@ export function getDashboardHtml(
       </div>
 
       <div class="empty-state" id="workspace-empty-state">
-        <div class="empty-icon">📁</div>
         <div style="font-weight: 600;">Workspace not scanned yet</div>
         <div style="font-size: 12px;">Click <strong>Scan Workspace</strong> to analyze your project dependencies and RAG structure.</div>
       </div>
@@ -803,19 +882,19 @@ export function getDashboardHtml(
     <div class="tab-panel" id="tab-guidelines">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">📖 The Standard RAG Pipeline Architecture</div>
-          <button class="btn" id="btn-open-guidelines-file">📄 Open Full GUIDELINES.md in Editor</button>
+          <div class="card-title">Standard RAG Pipeline Architecture</div>
+          <button class="btn" id="btn-open-guidelines-file">Open GUIDELINES.md in Editor</button>
         </div>
 
         <div class="diagram-box">
 ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
-│    Documents    │  ───▶ │ Text Extraction │  ───▶ │ Smart Chunking  │
+│    Documents    │  ---> │ Text Extraction │  ---> │ Smart Chunking  │
 │ (.md, .txt,...) │       │  (Clean Text)   │       │ (Size & Overlap)│
 └─────────────────┘       └─────────────────┘       └─────────────────┘
                                                              │
-                                                             ▼
+                                                             v
 ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
-│   LLM Context   │  ◀─── │ Similarity Top-K│  ◀─── │ Vector Database │
+│   LLM Context   │  <--- │ Similarity Top-K│  <--- │ Vector Database │
 │ (Augmented Gen) │       │   (Retrieval)   │       │ (pgvector, etc.)│
 └─────────────────┘       └─────────────────┘       └─────────────────┘
         </div>
@@ -840,7 +919,7 @@ export function getDashboardHtml(
         </div>
 
         <div class="warning-box info">
-          💡 <strong>Chunk Overlap Rule of Thumb:</strong> Use 10% to 20% overlap (e.g. 50 characters for a 500-character chunk). This prevents sentence boundaries or thoughts from being abruptly severed at chunk cutoffs.
+          [Notice] <strong>Chunk Overlap Rule of Thumb:</strong> Use 10% to 20% overlap (e.g. 50 characters for a 500-character chunk). This prevents sentence boundaries or thoughts from being abruptly severed at chunk cutoffs.
         </div>
       </div>
     </div>
@@ -860,7 +939,7 @@ export function getDashboardHtml(
     var activeTechFilter = 'all';
 
     // Sample Document Content
-    var SAMPLE_RAG_DOCUMENT = '# Introduction to Retrieval-Augmented Generation (RAG)\\n\\nRetrieval-Augmented Generation (RAG) is a pattern that combines the natural language generation capabilities of Large Language Models (LLMs) with dynamic retrieval of external information.\\n\\nRather than relying exclusively on static weights frozen during pre-training, a RAG system queries a specialized knowledge store—often a vector database like pgvector, Chroma, or FAISS—to retrieve factual excerpts matching a user inquiry.\\n\\n## Why Document Chunking Matters\\n\\nRaw enterprise documents, technical manuals, and API specifications are frequently thousands of tokens long. LLMs have limited context windows and can lose focus when flooded with irrelevant paragraphs (the \\"Lost in the Middle\\" problem).\\n\\nSmart chunking partitions text into atomic, semantically dense units. Preserving paragraph and sentence boundaries prevents concepts from being severed mid-thought.\\n\\n## Selecting Chunk Size and Overlap\\n\\nA standard chunk size of 500 to 1,000 characters paired with a 50 to 100 character overlap yields an optimal balance between vector precision and conversational context. Sliding window overlap ensures entities spanning across chunk splits are retained in both retrieval units.\\n\\n## The Vector Search Pipeline\\n\\n1. Ingestion: Documents are extracted and cleaned.\\n2. Chunking: Text is split at logical boundaries.\\n3. Embedding: Text chunks are converted to vectors using embedding models.\\n4. Storage: High-dimensional vectors are indexed in vector databases.\\n5. Retrieval: Cosine similarity identifies the top-K relevant chunks for any query.';
+    var SAMPLE_RAG_DOCUMENT = '# Introduction to Retrieval-Augmented Generation (RAG)\\n\\nRetrieval-Augmented Generation (RAG) is an architecture that couples the natural language synthesis of Large Language Models (LLMs) with dynamic retrieval from an external knowledge store.\\n\\nInstead of relying exclusively on frozen model weights, a RAG system queries a specialized vector database like pgvector, Chroma, or FAISS to retrieve relevant factual excerpts matching a user inquiry.\\n\\n## Why Document Chunking Matters\\n\\nEnterprise documents, technical manuals, and API specifications are frequently thousands of tokens long. LLMs have limited context windows and can experience degraded recall when given broad, noisy text blocks.\\n\\nSmart chunking divides documents into atomic, semantically dense units. Preserving paragraph and sentence boundaries prevents concepts from being severed mid-thought.\\n\\n## Selecting Chunk Size and Overlap\\n\\nA standard chunk size of 500 to 1,000 characters paired with a 50 to 100 character overlap provides an effective balance between retrieval precision and conversational context. Sliding window overlap ensures entities spanning across chunk splits are retained in both retrieval units.\\n\\n## The Vector Search Pipeline\\n\\n1. Ingestion: Documents are extracted and cleaned.\\n2. Chunking: Text is split at logical boundaries.\\n3. Embedding: Text chunks are converted to vectors using embedding models.\\n4. Storage: High-dimensional vectors are indexed in vector databases.\\n5. Retrieval: Cosine similarity identifies the top-K relevant chunks for any query.';
 
     // Elements
     var tabButtons = document.querySelectorAll('.tab-button');
@@ -1014,17 +1093,17 @@ export function getDashboardHtml(
       var size = parseInt(inputChunkSize.value, 10);
       var overlap = parseInt(inputChunkOverlap.value, 10);
       if (size <= 0) {
-        chunkConfigError.textContent = '❌ Chunk size must be greater than 0.';
+        chunkConfigError.textContent = 'Chunk size must be greater than 0.';
         chunkConfigError.style.display = 'block';
         return false;
       }
       if (overlap < 0) {
-        chunkConfigError.textContent = '❌ Overlap cannot be negative.';
+        chunkConfigError.textContent = 'Overlap cannot be negative.';
         chunkConfigError.style.display = 'block';
         return false;
       }
       if (overlap >= size) {
-        chunkConfigError.textContent = '❌ Overlap (' + overlap + ') must be strictly less than chunk size (' + size + ').';
+        chunkConfigError.textContent = 'Overlap (' + overlap + ') must be strictly less than chunk size (' + size + ').';
         chunkConfigError.style.display = 'block';
         return false;
       }
@@ -1107,7 +1186,7 @@ export function getDashboardHtml(
       badgeCurrentChars.textContent = chunk.characterCount.toLocaleString() + ' chars';
       badgeCurrentWords.textContent = chunk.wordCount.toLocaleString() + ' words';
       badgeCurrentTokens.textContent = '~' + chunk.estimatedTokenCount.toLocaleString() + ' tokens';
-      badgeCurrentOffsets.textContent = 'Offsets: ' + chunk.startOffset + ' → ' + chunk.endOffset;
+      badgeCurrentOffsets.textContent = 'Offsets: ' + chunk.startOffset + ' -> ' + chunk.endOffset;
 
       var targetSize = parseInt(inputChunkSize.value, 10) || 500;
       var pct = Math.min(100, Math.round((chunk.characterCount / targetSize) * 100));
@@ -1124,9 +1203,9 @@ export function getDashboardHtml(
       if (currentChunkIndex < currentChunks.length - 1) {
         var nextChunk = currentChunks[currentChunkIndex + 1];
         var overlapLen = Math.max(0, chunk.endOffset - nextChunk.startOffset);
-        chunkOverlapNotice.innerHTML = '🔗 <strong>Context Continuity:</strong> Shares ~' + overlapLen + ' overlapping characters with Chunk #' + (nextChunk.index + 1) + '.';
+        chunkOverlapNotice.innerHTML = '<strong>Context Continuity:</strong> Shares ~' + overlapLen + ' overlapping characters with Chunk #' + (nextChunk.index + 1) + '.';
       } else {
-        chunkOverlapNotice.innerHTML = '🏁 <strong>Terminal Chunk:</strong> Final segment of document.';
+        chunkOverlapNotice.innerHTML = '<strong>Terminal Chunk:</strong> Final segment of document.';
       }
 
       btnPrevChunk.disabled = (currentChunkIndex === 0);
@@ -1217,7 +1296,7 @@ export function getDashboardHtml(
     function runRetrievalSimulation() {
       var query = (inputSimQuery.value || '').trim();
       if (!query || currentChunks.length === 0) {
-        simResultsContainer.innerHTML = '<span style="font-size: 11px; color: var(--vscode-descriptionForeground);">Enter a query above to see ranked matching chunks.</span>';
+        simResultsContainer.innerHTML = '<span style="font-size: 11px; color: var(--vscode-descriptionForeground);">Enter a query above to inspect ranked matching chunks.</span>';
         return;
       }
 
@@ -1274,7 +1353,7 @@ export function getDashboardHtml(
         var title = document.createElement('span');
         title.style.fontWeight = '600';
         title.style.fontSize = '12px';
-        title.textContent = 'Rank #' + (idx + 1) + ' — Chunk #' + (item.chunk.index + 1) + ' (' + item.chunk.characterCount + ' chars, ~' + item.chunk.estimatedTokenCount + ' tokens)';
+        title.textContent = 'Rank #' + (idx + 1) + ' - Chunk #' + (item.chunk.index + 1) + ' (' + item.chunk.characterCount + ' chars, ~' + item.chunk.estimatedTokenCount + ' tokens)';
 
         var preview = document.createElement('span');
         preview.style.fontSize = '11px';
@@ -1334,15 +1413,15 @@ export function getDashboardHtml(
       var lines = [];
       lines.push('=== RAGLaB Workspace Audit: ' + lastWorkspaceAnalysis.projectName + ' ===');
       lines.push('Path: ' + lastWorkspaceAnalysis.rootPath);
-      lines.push('Status: ' + (lastWorkspaceAnalysis.isLikelyRagProject ? 'RAG Stack Active' : 'Standard Project'));
+      lines.push('Status: ' + (lastWorkspaceAnalysis.isLikelyRagProject ? 'RAG Stack Detected' : 'Standard Project'));
       lines.push('\\n--- Technologies Detected ---');
       lastWorkspaceAnalysis.technologies.forEach(function(t) {
-        lines.push((t.detected ? '[✓] ' : '[ ] ') + t.name.padEnd(25) + '(' + t.category + (t.source ? ' via ' + t.source : '') + ')');
+        lines.push((t.detected ? '[x] ' : '[ ] ') + t.name.padEnd(25) + '(' + t.category + (t.source ? ' via ' + t.source : '') + ')');
       });
       if (lastWorkspaceAnalysis.ragDirectories && lastWorkspaceAnalysis.ragDirectories.length > 0) {
         lines.push('\\n--- RAG Directories ---');
         lastWorkspaceAnalysis.ragDirectories.forEach(function(d) {
-          lines.push('📁 ' + d.name + '/ (' + d.purpose + ')');
+          lines.push(d.name + '/ (' + d.purpose + ')');
         });
       }
       vscode.postMessage({ command: 'copy', text: lines.join('\\n'), label: 'Workspace Report' });
@@ -1379,7 +1458,7 @@ export function getDashboardHtml(
       if (analysis.lineCount > 0 && (analysis.emptyLineCount / analysis.lineCount) > 0.3) {
         var warnDiv = document.createElement('div');
         warnDiv.className = 'warning-box warning';
-        warnDiv.innerHTML = '⚠️ Document has a high ratio of empty lines (' + Math.round((analysis.emptyLineCount / analysis.lineCount) * 100) + '%). Consider cleaning text before chunking.';
+        warnDiv.innerHTML = '<strong>Notice:</strong> Document has a high ratio of empty lines (' + Math.round((analysis.emptyLineCount / analysis.lineCount) * 100) + '%). Consider normalizing line breaks before generating embeddings.';
         docWarnings.appendChild(warnDiv);
       }
 
@@ -1412,7 +1491,7 @@ export function getDashboardHtml(
         chunkResult.warnings.forEach(function(w) {
           var box = document.createElement('div');
           box.className = 'warning-box ' + (w.severity || 'info');
-          box.textContent = (w.severity === 'error' ? '❌ ' : '⚠️ ') + w.message;
+          box.textContent = '[' + (w.severity === 'error' ? 'Error' : 'Warning') + '] ' + w.message;
           chunkWarnings.appendChild(box);
         });
       }
@@ -1449,14 +1528,14 @@ export function getDashboardHtml(
 
         var cat = document.createElement('span');
         cat.className = 'tech-category';
-        cat.textContent = t.category + (t.source ? ' • ' + t.source : '');
+        cat.textContent = t.category + (t.source ? ' via ' + t.source : '');
 
         info.appendChild(name);
         info.appendChild(cat);
 
         var pill = document.createElement('span');
         pill.className = 'status-pill ' + (t.detected ? 'yes' : 'no');
-        pill.textContent = t.detected ? '✓ Detected' : '○ Not found';
+        pill.innerHTML = '<span class="status-dot"></span> ' + (t.detected ? 'Detected' : 'Not found');
 
         card.appendChild(info);
         card.appendChild(pill);
@@ -1473,10 +1552,10 @@ export function getDashboardHtml(
 
       if (ws.isLikelyRagProject) {
         wsRagStatus.className = 'status-pill yes';
-        wsRagStatus.textContent = '🟢 RAG Stack Active';
+        wsRagStatus.innerHTML = '<span class="status-dot"></span> RAG Stack Detected';
       } else {
         wsRagStatus.className = 'status-pill no';
-        wsRagStatus.textContent = '⚪ Standard Project';
+        wsRagStatus.innerHTML = '<span class="status-dot"></span> Standard Project';
       }
 
       renderTechGrid();
@@ -1488,7 +1567,7 @@ export function getDashboardHtml(
         ws.ragDirectories.forEach(function(d) {
           var chip = document.createElement('span');
           chip.className = 'dir-chip';
-          chip.textContent = '📁 ' + d.name + '/';
+          chip.textContent = d.name + '/';
           chip.title = d.purpose;
           wsDirChips.appendChild(chip);
         });
