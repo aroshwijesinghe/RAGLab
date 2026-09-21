@@ -1,0 +1,148 @@
+{
+  "name": "raglab",
+  "displayName": "RAGLaB",
+  "description": "Interactive GUI Studio for RAG (Retrieval-Augmented Generation) Engineering & Pipeline Inspection",
+  "version": "0.1.0",
+  "publisher": "aroshwijesinghe",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Data Science",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "RAGLaB",
+    "RAG",
+    "AI",
+    "machine learning",
+    "embeddings",
+    "vector database",
+    "chunking",
+    "LLM",
+    "developer tools",
+    "retrieval augmented generation"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aroshwijesinghe/RAGLab"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "ragHelper.openDashboard",
+        "title": "RAGLaB: Open Studio Dashboard"
+      },
+      {
+        "command": "ragHelper.analyzeDocument",
+        "title": "RAGLaB: Analyze Document"
+      },
+      {
+        "command": "ragHelper.createChunks",
+        "title": "RAGLaB: Create Chunks"
+      },
+      {
+        "command": "ragHelper.previewChunks",
+        "title": "RAGLaB: Preview Chunks"
+      },
+      {
+        "command": "ragHelper.analyzeWorkspace",
+        "title": "RAGLaB: Analyze Workspace"
+      }
+    ],
+    "configuration": {
+      "title": "RAGLaB",
+      "properties": {
+        "ragHelper.defaultChunkSize": {
+          "type": "number",
+          "default": 500,
+          "description": "Default chunk size in characters",
+          "minimum": 10,
+          "maximum": 10000
+        },
+        "ragHelper.defaultChunkOverlap": {
+          "type": "number",
+          "default": 50,
+          "description": "Default chunk overlap in characters",
+          "minimum": 0,
+          "maximum": 5000
+        },
+        "ragHelper.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notification popups"
+        },
+        "ragHelper.maxFileSize": {
+          "type": "number",
+          "default": 5242880,
+          "description": "Maximum file size to process in bytes (default 5MB)"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "rag-helper",
+          "title": "RAGLaB",
+          "icon": "$(beaker)"
+        }
+      ]
+    },
+    "views": {
+      "rag-helper": [
+        {
+          "id": "ragHelper.sidebar",
+          "name": "RAGLaB Studio",
+          "type": "webview"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "ragHelper.analyzeDocument",
+          "when": "resourceExtname == .txt || resourceExtname == .md || resourceExtname == .json || resourceExtname == .csv",
+          "group": "rag-helper"
+        },
+        {
+          "command": "ragHelper.createChunks",
+          "when": "resourceExtname == .txt || resourceExtname == .md || resourceExtname == .json || resourceExtname == .csv",
+          "group": "rag-helper"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "pretest": "npm run compile",
+    "test": "mocha ./dist/test/suite/**/*.test.js --timeout 10000",
+    "test:integration": "node ./dist/test/runTests.js",
+    "lint": "eslint src --ext ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "package": "vsce package",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "@types/mocha": "^10.0.0",
+    "@types/glob": "^8.0.0",
+    "typescript": "^5.3.0",
+    "esbuild": "^0.19.0",
+    "@vscode/test-electron": "^2.3.0",
+    "@vscode/vsce": "^2.22.0",
+    "eslint": "^8.55.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "prettier": "^3.1.0",
+    "mocha": "^10.2.0",
+    "glob": "^10.3.0"
+  }
+}
