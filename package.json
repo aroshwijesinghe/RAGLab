@@ -26,7 +26,8 @@
     "retrieval augmented generation"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onView:ragHelper.sidebar"
   ],
   "main": "./dist/extension.js",
   "repository": {
@@ -90,7 +91,7 @@
         {
           "id": "rag-helper",
           "title": "RAGLaB",
-          "icon": "$(beaker)"
+          "icon": "resources/raglab-icon.svg"
         }
       ]
     },
