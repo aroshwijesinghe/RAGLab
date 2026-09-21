@@ -42,9 +42,10 @@ The **Document Inspector** analyzes documents to calculate character density, wo
 
 ### How to Use the GUI:
 1. Open the **📄 Document Inspector** tab inside RAGLaB Studio.
-2. Load text using any of these 3 intuitive methods:
+2. Load text using any of these 4 intuitive methods:
    - **📂 Select File from Disk**: Click to choose any `.txt`, `.md`, `.json`, or `.csv` file from your computer.
    - **⚡ Load Active File**: Click to instantly pull text from whatever file is currently active in your VS Code editor.
+   - **📚 Load Sample Document**: Click to instantly load an informative Markdown document about RAG pipelines to test RAGLaB without your own files!
    - **✍️ Manual Scratchpad**: Paste or type text directly into the text box and click **🔍 Analyze Text**.
 3. Inspect your document KPIs:
    - **Characters**: Total raw characters.
@@ -62,9 +63,11 @@ The **Chunking Studio** divides documents into semantically coherent segments, p
 
 ### How to Configure Chunks in the GUI:
 1. Open the **🔪 Chunking Studio** tab.
-2. Adjust the sliders or numeric input boxes:
-   - **Chunk Size**: Target maximum characters per chunk (default `500`).
-   - **Chunk Overlap**: Number of characters to carry over from the end of the preceding chunk into the next chunk (default `50`).
+2. Adjust the sliders or numeric input boxes, or click one of the **Quick Presets**:
+   - **⚡ Factoid (250 / 25)**: Small chunks for strict fact lookups and high-precision Q&A.
+   - **⚡ Standard RAG (500 / 50)**: Balanced general-purpose chunks.
+   - **⚡ Deep Context (1000 / 100)**: Large chunks for narratives and summaries.
+   - Or manually set **Chunk Size** (50–3000) and **Chunk Overlap** (0–500).
 3. **Live Validation**: The GUI automatically validates your settings. If the overlap is greater than or equal to the chunk size, you will see an immediate warning.
 4. Click **`⚡ Generate Chunks`**.
 
@@ -81,7 +84,8 @@ The **Chunking Studio** divides documents into semantically coherent segments, p
 - **One-Click Exporting**:
   - Click **📋 Copy** to copy the current chunk to your clipboard.
   - Click **📋 Copy All Chunks** to copy all chunks with formatted headers.
-  - Click **💾 Export JSON** to copy the entire structured dataset for use in Python, LangChain, or databases.
+  - Click **📋 Copy JSON** to copy the entire structured dataset to clipboard.
+  - Click **💾 Save to File (.json)** to launch a native file save dialog and save the chunk dataset directly to a JSON file in your project!
 
 ---
 
@@ -94,8 +98,10 @@ The **Workspace Scanner** inspects your active VS Code project to identify insta
 2. Click **`🔄 Scan Workspace`**.
 3. Review your RAG Stack:
    - **Readiness Badge**: Displays `🟢 RAG Stack Active` if vector databases, orchestration libraries, or embedding packages are found.
+   - **Category Filters**: Click `All`, `Vector DBs`, `Embeddings`, `Orchestration`, or `Frameworks` to isolate specific dependencies.
    - **Technology Cards**: Displays each technology with its detection status (`✓ Detected` in green or `○ Not found` in gray) and the source file where it was identified (`requirements.txt`, `package.json`, etc.).
    - **RAG Directories**: Highlights folders dedicated to document ingestion, embeddings, or retrieval (e.g., `documents/`, `embeddings/`, `retrieval/`).
+   - **📋 Copy Report**: Click to copy the full formatted workspace audit report to your clipboard.
 
 ### Supported Technologies Detected:
 - **Vector Databases**: `pgvector`, `Chroma`, `FAISS`, `Qdrant`, `Pinecone`, `Weaviate`, `Milvus`, `PostgreSQL`

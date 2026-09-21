@@ -226,8 +226,18 @@ export class DashboardPanel {
         break;
       }
 
-      case 'showWarning': {
-        vscode.window.showWarningMessage(message.text);
+      case 'requestSaveChunksFile': {
+        const chunksJson: string = message.jsonContent || '';
+        const suggestedName = (message.fileName ? message.fileName.replace(/\.[^.]+$/, '') : 'document') + '.chunks.json';
+        const saveUri = await vscode.window.showSaveDialog({
+          defaultUri: vscode.Uri.file(suggestedName),
+          filters: { 'JSON Files': ['json'], 'All Files': ['*'] },
+          title: 'Save Chunks Dataset to JSON File'
+        });
+        if (saveUri) {
+          await vscode.workspace.fs.writeFile(saveUri, Buffer.from(chunksJson, 'utf8'));
+          vscode.window.showInformationMessage(`RAGLaB: Successfully saved chunks to ${path.basename(saveUri.fsPath)}!`);
+        }
         break;
       }
 

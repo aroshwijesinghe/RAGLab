@@ -83,6 +83,7 @@ RAGLaB can be opened in 3 convenient ways:
 2. Select your text input method:
    - **`📂 Select File from Disk`**: Opens a native file dialog to choose any `.md`, `.txt`, `.json`, or `.csv` file.
    - **`⚡ Load Active File`**: Instantly imports text from whatever file is currently active in your editor.
+   - **`📚 Load Sample Document`**: Instantly loads a comprehensive RAG pipeline reference document for testing without your own files.
    - **`✍️ Scratchpad`**: Paste or write custom text into the multi-line text box and click **`🔍 Analyze Text`**.
 3. Review your Document Metrics:
    - **Characters**: Exact raw character length.
@@ -97,9 +98,11 @@ RAGLaB can be opened in 3 convenient ways:
 
 ### 3. Using the Chunking Studio & Visualizer
 1. Click the **`🔪 Chunking Studio`** tab.
-2. Configure parameters:
-   - **Chunk Size Slider / Input**: Set target maximum characters (default: `500`).
-   - **Chunk Overlap Slider / Input**: Set sliding overlap characters (default: `50`).
+2. Configure parameters using sliders, number inputs, or **Quick Presets**:
+   - **`⚡ Factoid (250 / 25)`**: Small chunks for strict fact lookups and high-precision Q&A.
+   - **`⚡ Standard RAG (500 / 50)`**: Balanced general-purpose chunks.
+   - **`⚡ Deep Context (1000 / 100)`**: Large chunks for narratives and summaries.
+   - Or manually customize **Chunk Size** (50–3,000) and **Chunk Overlap** (0–500).
    - *Sanity Check*: If overlap is greater than or equal to chunk size, the GUI immediately displays an error banner preventing invalid runs.
 3. Click **`⚡ Generate Chunks`**.
 4. Examine the **Set Statistics**:
@@ -111,10 +114,11 @@ RAGLaB can be opened in 3 convenient ways:
    - Type a chunk number into `Chunk [ X ] of [ Total ]` to jump directly.
    - In the **Search Box**, type any keyword:
      - The match counter displays how many chunks contain the query.
-     - Matching terms are highlighted in yellow inside the chunk content.
+     - Matching terms are highlighted in yellow inside the chunk content in real time.
    - Click **`📋 Copy`** to copy the current chunk to clipboard.
    - Click **`📋 Copy All Chunks`** to copy all chunks formatted with delimiter headers.
-   - Click **`💾 Export JSON`** to export the structured chunk dataset.
+   - Click **`📋 Copy JSON`** to copy the entire structured dataset to clipboard.
+   - Click **`💾 Save to File (.json)`** to save the chunk dataset directly to a `.json` file in your workspace!
 
 ---
 
@@ -125,11 +129,13 @@ RAGLaB can be opened in 3 convenient ways:
 4. Review results:
    - **Project Name & Root**: Basic repository identification.
    - **RAG Status Badge**: `🟢 RAG Stack Active` if RAG dependencies exist, or `⚪ Standard Project` if none are found.
+   - **Category Filters**: Filter technologies by `All`, `Vector DBs`, `Embeddings`, `Orchestration`, or `Frameworks`.
    - **Technology Cards**: Displays status pills:
      - `✓ Detected` (green background + file source label)
      - `○ Not found` (neutral gray badge)
      - Covers: `pgvector`, `Chroma`, `FAISS`, `Qdrant`, `Pinecone`, `Weaviate`, `Milvus`, `PostgreSQL`, `Sentence Transformers`, `OpenAI`, `HuggingFace`, `LangChain`, `LlamaIndex`, `Haystack`, `FastAPI`, `Flask`, `Express`, `Python`, `TypeScript`.
    - **RAG Directories**: Lists detected directories like `documents/`, `embeddings/`, `retrieval/`, `data/`, etc.
+   - **`📋 Copy Report`**: Copy the complete workspace diagnostic report to your clipboard with one click.
 
 ---
 
