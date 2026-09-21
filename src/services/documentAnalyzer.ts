@@ -45,6 +45,6 @@ export async function analyzeDocument(filePath: string, maxFileSize: number): Pr
             pageCount
         };
     } catch (error: any) {
-        throw new Error(`Failed to analyze document ${filePath}: ${error.message}`);
+        throw new Error(error.message || String(error));
     }
 }

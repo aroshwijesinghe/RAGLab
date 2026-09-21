@@ -1,4 +1,7 @@
 import './pdfPolyfill';
+import * as path from 'path';
+import * as fs from 'fs';
+import { pathToFileURL } from 'url';
 import { PDFParse } from 'pdf-parse';
 
 export interface ExtractedPdfPage {
@@ -13,12 +16,39 @@ export interface ExtractedPdfResult {
 }
 
 /**
+ * Resolves the absolute file URL to pdf.worker.mjs for pdfjs-dist.
+ * Ensures the worker can be dynamically imported regardless of process.cwd().
+ */
+export function resolvePdfWorkerUrl(): string {
+  const candidatePaths = [
+    path.join(__dirname, 'pdf.worker.mjs'),
+    path.join(__dirname, '..', 'pdf.worker.mjs'),
+    path.join(__dirname, 'dist', 'pdf.worker.mjs'),
+    path.join(__dirname, '..', '..', 'dist', 'pdf.worker.mjs'),
+    path.join(__dirname, 'node_modules', 'pdfjs-dist', 'legacy', 'build', 'pdf.worker.mjs'),
+    path.join(__dirname, '..', 'node_modules', 'pdfjs-dist', 'legacy', 'build', 'pdf.worker.mjs'),
+    path.join(__dirname, '..', '..', 'node_modules', 'pdfjs-dist', 'legacy', 'build', 'pdf.worker.mjs'),
+  ];
+
+  for (const p of candidatePaths) {
+    if (fs.existsSync(p)) {
+      return pathToFileURL(p).href;
+    }
+  }
+
+  return pathToFileURL(path.join(__dirname, 'pdf.worker.mjs')).href;
+}
+
+/**
  * Extracts text and pagination structure from a PDF binary buffer.
  */
 export async function extractTextFromPdf(buffer: Buffer): Promise<ExtractedPdfResult> {
   if (!buffer || buffer.length === 0) {
     return { text: '', totalPages: 0, pages: [] };
   }
+
+  const workerUrl = resolvePdfWorkerUrl();
+  PDFParse.setWorker(workerUrl);
 
   const parser = new PDFParse({ data: buffer });
   try {

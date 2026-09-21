@@ -113,7 +113,7 @@ export class DashboardPanel {
             vscode.window.showInformationMessage(`Loaded ${analysis.fileName} into RAGLaB Studio.`);
           }
         } catch (err: any) {
-          vscode.window.showErrorMessage(`Failed to analyze document: ${err.message || String(err)}`);
+          vscode.window.showErrorMessage(`Failed to analyze ${path.basename(filePath)}: ${err.message || String(err)}`);
         }
         break;
       }
