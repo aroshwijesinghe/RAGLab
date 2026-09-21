@@ -339,9 +339,23 @@ export function getDashboardHtml(
       gap: 8px;
     }
 
+    .chunk-util-bar-container {
+      height: 4px;
+      width: 100%;
+      background: rgba(128, 128, 128, 0.15);
+      overflow: hidden;
+    }
+
+    .chunk-util-bar {
+      height: 100%;
+      background: var(--accent-color);
+      transition: width 0.2s ease;
+    }
+
     .chunk-badges {
       display: flex;
       gap: 6px;
+      flex-wrap: wrap;
     }
 
     .badge-pill {
@@ -369,6 +383,25 @@ export function getDashboardHtml(
       color: inherit;
       border-radius: 2px;
       padding: 0 2px;
+    }
+
+    /* Retrieval Simulator */
+    .retrieval-card {
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      padding: 10px 14px;
+      background: var(--header-bg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .retrieval-card:hover {
+      border-color: var(--accent-color);
+      background: rgba(14, 99, 156, 0.08);
+      transform: translateX(2px);
     }
 
     /* Technology Grid */
@@ -682,9 +715,33 @@ export function getDashboardHtml(
             </div>
           </div>
 
+          <div class="chunk-util-bar-container">
+            <div class="chunk-util-bar" id="chunk-util-bar" style="width: 0%;"></div>
+          </div>
+
           <div class="chunk-body" id="chunk-content-view">
             No chunk selected.
           </div>
+
+          <div id="chunk-overlap-notice" style="font-size: 11px; padding: 6px 12px; background: rgba(117,190,255,0.08); border-top: 1px solid var(--border-color); color: var(--vscode-descriptionForeground);">
+            🔗 Overlap Continuity: Calculating...
+          </div>
+        </div>
+
+        <!-- Local Retrieval Simulator Card -->
+        <div class="card" id="retrieval-sim-card" style="margin-top: 8px;">
+          <div class="card-header">
+            <div class="card-title">🎯 Local Top-K Retrieval Simulator</div>
+            <span class="badge-pill" id="badge-headroom">Headroom: 100% free</span>
+          </div>
+          <div style="font-size: 12px; color: var(--vscode-descriptionForeground);">
+            Test how your chunking strategy performs against realistic user queries using local lexical relevance scoring.
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="input-sim-query" placeholder="Enter query (e.g. 'How does vector chunking work?')..." style="flex: 1;">
+            <button class="btn" id="btn-run-sim">🔎 Retrieve Top-K</button>
+          </div>
+          <div id="sim-results-container" style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;"></div>
         </div>
       </div>
 
@@ -867,6 +924,14 @@ export function getDashboardHtml(
     var btnCopyAllChunks = document.getElementById('btn-copy-all-chunks');
     var btnExportChunksJson = document.getElementById('btn-export-chunks-json');
     var btnSaveChunksFile = document.getElementById('btn-save-chunks-file');
+    var chunkUtilBar = document.getElementById('chunk-util-bar');
+    var chunkOverlapNotice = document.getElementById('chunk-overlap-notice');
+
+    // Retrieval Simulator Elements
+    var inputSimQuery = document.getElementById('input-sim-query');
+    var btnRunSim = document.getElementById('btn-run-sim');
+    var simResultsContainer = document.getElementById('sim-results-container');
+    var badgeHeadroom = document.getElementById('badge-headroom');
 
     // Presets
     document.getElementById('preset-small').addEventListener('click', function() {
@@ -1032,6 +1097,8 @@ export function getDashboardHtml(
     function renderCurrentChunk() {
       if (!currentChunks || currentChunks.length === 0) {
         chunkContentView.textContent = 'No chunks available.';
+        chunkUtilBar.style.width = '0%';
+        chunkOverlapNotice.textContent = 'No active chunk.';
         return;
       }
 
@@ -1041,6 +1108,26 @@ export function getDashboardHtml(
       badgeCurrentWords.textContent = chunk.wordCount.toLocaleString() + ' words';
       badgeCurrentTokens.textContent = '~' + chunk.estimatedTokenCount.toLocaleString() + ' tokens';
       badgeCurrentOffsets.textContent = 'Offsets: ' + chunk.startOffset + ' → ' + chunk.endOffset;
+
+      var targetSize = parseInt(inputChunkSize.value, 10) || 500;
+      var pct = Math.min(100, Math.round((chunk.characterCount / targetSize) * 100));
+      chunkUtilBar.style.width = pct + '%';
+      if (pct < 50) {
+        chunkUtilBar.style.background = 'var(--warning-color)';
+      } else if (pct > 120) {
+        chunkUtilBar.style.background = 'var(--error-color)';
+      } else {
+        chunkUtilBar.style.background = 'var(--accent-color)';
+      }
+
+      // Overlap Notice
+      if (currentChunkIndex < currentChunks.length - 1) {
+        var nextChunk = currentChunks[currentChunkIndex + 1];
+        var overlapLen = Math.max(0, chunk.endOffset - nextChunk.startOffset);
+        chunkOverlapNotice.innerHTML = '🔗 <strong>Context Continuity:</strong> Shares ~' + overlapLen + ' overlapping characters with Chunk #' + (nextChunk.index + 1) + '.';
+      } else {
+        chunkOverlapNotice.innerHTML = '🏁 <strong>Terminal Chunk:</strong> Final segment of document.';
+      }
 
       btnPrevChunk.disabled = (currentChunkIndex === 0);
       btnNextChunk.disabled = (currentChunkIndex === currentChunks.length - 1);
@@ -1124,6 +1211,105 @@ export function getDashboardHtml(
         jsonContent: jsonStr,
         fileName: currentFileName
       });
+    });
+
+    // Retrieval Simulation Algorithm (Local TF-IDF Lexical Similarity)
+    function runRetrievalSimulation() {
+      var query = (inputSimQuery.value || '').trim();
+      if (!query || currentChunks.length === 0) {
+        simResultsContainer.innerHTML = '<span style="font-size: 11px; color: var(--vscode-descriptionForeground);">Enter a query above to see ranked matching chunks.</span>';
+        return;
+      }
+
+      var terms = query.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(function(w) { return w.length > 1; });
+      if (terms.length === 0) return;
+
+      var N = currentChunks.length;
+      var dfMap = {};
+      terms.forEach(function(t) {
+        dfMap[t] = currentChunks.filter(function(c) { return c.content.toLowerCase().indexOf(t) !== -1; }).length;
+      });
+
+      var scored = currentChunks.map(function(chunk) {
+        var lower = chunk.content.toLowerCase();
+        var score = 0;
+        terms.forEach(function(t) {
+          var count = 0;
+          var pos = lower.indexOf(t);
+          while (pos !== -1) {
+            count++;
+            pos = lower.indexOf(t, pos + 1);
+          }
+          if (count > 0) {
+            var tf = count / (chunk.wordCount || 1);
+            var idf = Math.log(1 + (N / ((dfMap[t] || 0) + 1)));
+            score += tf * idf * 100;
+          }
+        });
+        return { chunk: chunk, score: score };
+      });
+
+      scored.sort(function(a, b) { return b.score - a.score; });
+      var topK = scored.slice(0, 3).filter(function(item) { return item.score > 0; });
+
+      simResultsContainer.innerHTML = '';
+      if (topK.length === 0) {
+        simResultsContainer.innerHTML = '<div style="font-size: 12px; color: var(--vscode-descriptionForeground);">No relevant chunks matched query terms. Try different keywords.</div>';
+        badgeHeadroom.textContent = 'Top-K: 0 tokens';
+        return;
+      }
+
+      var totalTopTokens = 0;
+      topK.forEach(function(item, idx) {
+        totalTopTokens += item.chunk.estimatedTokenCount;
+        var card = document.createElement('div');
+        card.className = 'retrieval-card';
+        card.title = 'Click to jump to Chunk #' + (item.chunk.index + 1);
+
+        var left = document.createElement('div');
+        left.style.display = 'flex';
+        left.style.flexDirection = 'column';
+        left.style.gap = '2px';
+
+        var title = document.createElement('span');
+        title.style.fontWeight = '600';
+        title.style.fontSize = '12px';
+        title.textContent = 'Rank #' + (idx + 1) + ' — Chunk #' + (item.chunk.index + 1) + ' (' + item.chunk.characterCount + ' chars, ~' + item.chunk.estimatedTokenCount + ' tokens)';
+
+        var preview = document.createElement('span');
+        preview.style.fontSize = '11px';
+        preview.style.color = 'var(--vscode-descriptionForeground)';
+        preview.textContent = item.chunk.content.substring(0, 90) + '...';
+
+        left.appendChild(title);
+        left.appendChild(preview);
+
+        var right = document.createElement('span');
+        right.className = 'badge-pill';
+        right.style.background = 'rgba(56,138,52,0.2)';
+        right.style.color = '#73c991';
+        right.textContent = 'Match: ' + Math.min(99, Math.round(item.score * 10)) + '%';
+
+        card.appendChild(left);
+        card.appendChild(right);
+
+        card.addEventListener('click', function() {
+          currentChunkIndex = item.chunk.index;
+          searchQuery = terms[0] || '';
+          inputChunkSearch.value = searchQuery;
+          renderCurrentChunk();
+        });
+
+        simResultsContainer.appendChild(card);
+      });
+
+      var headroomPct = ((totalTopTokens / 4096) * 100).toFixed(1);
+      badgeHeadroom.textContent = 'Top-3: ~' + totalTopTokens + ' tokens (' + headroomPct + '% of 4K context)';
+    }
+
+    btnRunSim.addEventListener('click', runRetrievalSimulation);
+    inputSimQuery.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') runRetrievalSimulation();
     });
 
     // Keyboard navigation
@@ -1234,6 +1420,10 @@ export function getDashboardHtml(
       chunkEmptyState.style.display = 'none';
       chunkResultsCard.style.display = 'flex';
       renderCurrentChunk();
+
+      // Reset or trigger simulation with default query
+      inputSimQuery.value = 'vector chunking';
+      runRetrievalSimulation();
     }
 
     // Render Tech Grid with Category Filter

@@ -60,10 +60,11 @@
 
 | Tab / View | Capabilities & Visual Elements |
 |---|---|
-| **📄 Document Inspector** | • Load files via disk picker, current editor tab, or scratchpad.<br>• Visual KPI cards for Characters, Words, Lines, Empty Lines, and Density.<br>• Estimated Tokens metric using industry-standard BPE heuristic (`~words × 1.3`).<br>• Health warnings (e.g. high empty line ratio alerts).<br>• One-click **Send to Chunking Studio** button. |
-| **🔪 Chunking Studio** | • Real-time interactive sliders & number inputs for **Chunk Size** (50–3,000) and **Overlap** (0–500).<br>• Live sanity validation (flags when overlap $\ge$ chunk size).<br>• Distribution summary: Total Chunks, Min/Avg/Max Characters, Words, and Tokens.<br>• Quality alert badges for small, oversized, or irregular chunks. |
-| **👁️ Chunk Explorer** | • Navigation bar: `◀ Prev`, `Next ▶`, and `Chunk [ X ] of [ Total ]` jump input.<br>• Keyboard navigation: Arrow Left (`←`) and Arrow Right (`→`).<br>• Full-text search with instant `<mark>` highlight and match counter.<br>• Chunk metadata pills: character count, word count, token estimation, and start/end character offsets.<br>• Action buttons: **Copy Chunk**, **Copy All Chunks**, **Export as JSON**. |
-| **🔍 Workspace Scanner** | • Automated dependency scanner for project manifests.<br>• **RAG Readiness Status**: Green pulse badge (`🟢 RAG Stack Active`) vs neutral badge.<br>• Categorized technology cards: Vector DBs (`pgvector`, `Chroma`, `FAISS`, etc.), Embeddings, Orchestration (`LangChain`, `LlamaIndex`), and Frameworks.<br>• Visual RAG folder chip map (`documents/`, `embeddings/`, etc.). |
+| **📄 Document Inspector** | • Load files via disk picker, current editor tab, or scratchpad.<br>• Instant **Load Sample Document** button for immediate testing.<br>• Visual KPI cards for Characters, Words, Lines, Empty Lines, and Density.<br>• Estimated Tokens metric using industry-standard BPE heuristic (`~words × 1.3`).<br>• Health warnings (e.g. high empty line ratio alerts).<br>• One-click **Send to Chunking Studio** button. |
+| **🔪 Chunking Studio** | • Real-time interactive sliders & number inputs for **Chunk Size** (50–3,000) and **Overlap** (0–500).<br>• 1-click **Quick Presets**: Factoid (250/25), Standard RAG (500/50), Deep Context (1000/100).<br>• Live sanity validation (flags when overlap $\ge$ chunk size).<br>• Distribution summary: Total Chunks, Min/Avg/Max Characters, Words, and Tokens.<br>• Quality alert badges for small, oversized, or irregular chunks.<br>• Native **Save to File (.json)** export dialog. |
+| **👁️ Chunk Explorer** | • Navigation bar: `◀ Prev`, `Next ▶`, and `Chunk [ X ] of [ Total ]` jump input.<br>• Keyboard navigation: Arrow Left (`←`) and Arrow Right (`→`).<br>• Full-text search with instant `<mark>` highlight and match counter.<br>• Dynamic **Chunk Utilization Progress Bar** (color-coded green/yellow/red).<br>• **Overlap Context Continuity** pill showing exact shared characters with adjacent chunks.<br>• Metadata pills: character count, word count, token estimation, and start/end character offsets.<br>• Action buttons: **Copy Chunk**, **Copy All Chunks**, **Copy JSON**, **Save to File**. |
+| **🎯 Local Retrieval Simulator** | • Local Top-K retrieval testing using TF-IDF lexical similarity.<br>• Enter queries (e.g. *"What is pgvector?"*) to see the **Top-3 Ranked Chunks** with match percentage scores.<br>• 1-click jump to inspect any retrieved chunk in the visualizer.<br>• **LLM Context Headroom Gauge**: Computes total retrieved tokens and % utilization of 4K/8K context windows. |
+| **🔍 Workspace Scanner** | • Automated dependency scanner for project manifests (`requirements.txt`, `package.json`, `pyproject.toml`).<br>• **RAG Readiness Status**: Green pulse badge (`🟢 RAG Stack Active`) vs neutral badge.<br>• Category filter buttons: `All`, `Vector DBs`, `Embeddings`, `Orchestration`, and `Frameworks`.<br>• 1-click **Copy Report** button for sharing repository audit summaries.<br>• Visual RAG folder chip map (`documents/`, `embeddings/`, etc.). |
 | **📖 Guidelines Tab** | • ASCII RAG pipeline architectural diagram.<br>• Chunk sizing decision matrix (Small vs. Medium vs. Large).<br>• Overlap guidance (10–20% rule of thumb).<br>• Direct button to open the full [GUIDELINES.md](GUIDELINES.md) handbook in VS Code. |
 
 ---
@@ -122,7 +123,19 @@ RAGLaB can be opened in 3 convenient ways:
 
 ---
 
-### 4. Using the Workspace RAG Scanner
+### 4. Testing Local Retrieval & Context Headroom
+1. In the **Chunking Studio**, look directly below your chunk preview box to find the **Local Top-K Retrieval Simulator**.
+2. Enter any natural language inquiry (e.g., *"How does vector chunking work?"* or *"What is pgvector?"*).
+3. Click **`🔎 Retrieve Top-K`** or press `Enter`.
+4. Review the **Top-3 Ranked Chunks**:
+   - Each card displays its rank, chunk index, character/token count, and relevance match score.
+   - **Click any result** to jump directly to that chunk in the viewer with search terms highlighted!
+5. Check the **LLM Context Headroom Gauge**:
+   - Computes the combined token count of your Top-K retrieved chunks and tells you what percentage of standard 4K/8K context windows will be used, ensuring your prompt template and system instructions won't get cut off!
+
+---
+
+### 5. Using the Workspace RAG Scanner
 1. Click the **`🔍 Workspace Scanner`** tab.
 2. Click **`🔄 Scan Workspace`**.
 3. RAGLaB parses project manifests (`requirements.txt`, `package.json`, `pyproject.toml`) and root folders without executing any untrusted code.
@@ -139,7 +152,7 @@ RAGLaB can be opened in 3 convenient ways:
 
 ---
 
-### 5. Using the Activity Bar Sidebar
+### 6. Using the Activity Bar Sidebar
 The RAGLaB Sidebar lives in the left VS Code Activity Bar:
 - Click **`🚀 Open Full Studio`** to open the unified multi-tab studio.
 - Click **`📄 Analyze Document`** for quick file metrics.

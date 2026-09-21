@@ -87,6 +87,14 @@ The **Chunking Studio** divides documents into semantically coherent segments, p
   - Click **📋 Copy JSON** to copy the entire structured dataset to clipboard.
   - Click **💾 Save to File (.json)** to launch a native file save dialog and save the chunk dataset directly to a JSON file in your project!
 
+### 🎯 Local Retrieval Simulator & Context Headroom Gauge:
+Right below your chunks in the Chunking Studio, RAGLaB provides a local **Retrieval Simulator**:
+1. Type a realistic query or question into the input (e.g., `"Why does document chunking matter?"`).
+2. Click **`🔎 Retrieve Top-K`** or press `Enter`.
+3. RAGLaB runs a local TF-IDF relevance scoring engine across all your chunks and displays the **Top-3 Most Relevant Chunks** with match percentage badges.
+4. **Click any ranked card** to instantly jump to and view that chunk in the viewer!
+5. **Context Headroom Gauge**: Displays the total token footprint of the Top-K chunks and calculates what percentage of a standard 4K/8K LLM context window is consumed, helping you prevent context window overflow before ever deploying to production!
+
 ---
 
 ## 4. Workspace RAG Scanner Guide
