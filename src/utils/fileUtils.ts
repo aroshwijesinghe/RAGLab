@@ -38,7 +38,7 @@ export async function readTextFile(filePath: string, maxSizeBytes: number): Prom
     const maxMB = (maxSizeBytes / (1024 * 1024)).toFixed(2);
     throw new Error(
       `File is too large (${sizeMB} MB). Maximum allowed size is ${maxMB} MB. ` +
-      `You can change this in Settings → RAG Helper → Max File Size.`
+      `You can change this in Settings → RAGLaB → Max File Size.`
     );
   }
   return fs.promises.readFile(filePath, 'utf-8');

@@ -340,7 +340,7 @@ sequenceDiagram
     participant Stats as StatisticsService
     participant Webview as ChunkViewerPanel
 
-    User->>Command: Trigger "RAG Helper: Create Chunks"
+    User->>Command: Trigger "RAGLaB: Create Chunks"
     Command->>Command: Read editor text & config (chunkSize, overlap)
     Command->>Service: chunkDocument(text, options)
     Service->>TextUtil: splitIntoParagraphs(text)
