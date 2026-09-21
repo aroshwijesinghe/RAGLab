@@ -38,6 +38,7 @@ export function getDashboardHtml(
       --success-color: #388a34;
       --warning-color: #cca700;
       --error-color: #f48771;
+      --card-radius: 8px;
     }
 
     * {
@@ -81,12 +82,13 @@ export function getDashboardHtml(
       height: 36px;
       border-radius: 8px;
       object-fit: cover;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      transition: transform 0.25s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
     }
 
     .brand-logo-img:hover {
-      transform: scale(1.05) rotate(-2deg);
+      transform: scale(1.06) rotate(-2deg);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
     }
 
     .brand-text-group {
@@ -112,6 +114,10 @@ export function getDashboardHtml(
       border-radius: 10px;
       font-weight: 600;
       letter-spacing: 0.3px;
+      transition: transform 0.2s ease;
+    }
+    .brand-badge:hover {
+      transform: scale(1.05);
     }
 
     .brand-subtitle {
@@ -145,7 +151,8 @@ export function getDashboardHtml(
 
     .tab-button:hover {
       color: var(--vscode-editor-foreground);
-      background: rgba(128, 128, 128, 0.07);
+      background: rgba(128, 128, 128, 0.08);
+      border-radius: 4px 4px 0 0;
     }
 
     .tab-button.active {
@@ -169,13 +176,13 @@ export function getDashboardHtml(
 
     .tab-panel.active {
       display: flex;
-      animation: tabSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: tabSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     @keyframes tabSlideUp {
       from {
         opacity: 0;
-        transform: translateY(6px);
+        transform: translateY(8px);
       }
       to {
         opacity: 1;
@@ -187,16 +194,18 @@ export function getDashboardHtml(
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-radius: 6px;
+      border-radius: var(--card-radius);
       padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+      transition: border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease;
     }
 
     .card:hover {
-      border-color: rgba(128, 128, 128, 0.35);
+      border-color: rgba(14, 99, 156, 0.45);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     }
 
     .card-header {
@@ -235,11 +244,12 @@ export function getDashboardHtml(
     .btn:hover {
       background-color: var(--vscode-button-hoverBackground);
       transform: translateY(-1px);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
     .btn:active {
       transform: translateY(0) scale(0.98);
+      box-shadow: none;
     }
 
     .btn:disabled {
@@ -258,6 +268,17 @@ export function getDashboardHtml(
       background-color: var(--vscode-button-secondaryHoverBackground, rgba(128, 128, 128, 0.26));
     }
 
+    .btn-copied {
+      background-color: var(--success-color, #388a34) !important;
+      color: #ffffff !important;
+      animation: copyPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes copyPop {
+      0% { transform: scale(0.95); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
     /* KPI Grid */
     .kpi-grid {
       display: grid;
@@ -268,15 +289,54 @@ export function getDashboardHtml(
     .kpi-card {
       background: var(--header-bg);
       border: 1px solid var(--border-color);
-      border-radius: 5px;
+      border-radius: 6px;
       padding: 10px 14px;
       display: flex;
       flex-direction: column;
-      transition: transform 0.18s ease;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .kpi-card:hover {
       transform: translateY(-2px);
+      border-color: rgba(14, 99, 156, 0.5);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-color);
+      opacity: 0.4;
+      transition: opacity 0.2s ease;
+    }
+    .kpi-card:hover::before {
+      opacity: 1;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      color: var(--vscode-descriptionForeground);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--vscode-editor-foreground);
+    }
+
+    .kpi-note {
+      font-size: 10px;
+      color: var(--vscode-descriptionForeground);
+      margin-top: 2px;
     }
 
     .kpi-label {
@@ -420,14 +480,111 @@ export function getDashboardHtml(
       color: var(--vscode-editor-foreground);
     }
 
+    /* Drop Zone */
+    .drop-zone {
+      border: 2px dashed var(--border-color);
+      border-radius: 6px;
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(128, 128, 128, 0.03);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+    .drop-zone:hover, .drop-zone.drag-active {
+      border-color: var(--accent-color);
+      background: rgba(14, 99, 156, 0.08);
+      transform: scale(1.005);
+    }
+    .drop-zone.drag-active {
+      border-style: solid;
+      box-shadow: 0 0 12px rgba(14, 99, 156, 0.25);
+    }
+    .drop-icon {
+      color: var(--accent-color);
+      opacity: 0.85;
+      transition: transform 0.2s ease;
+    }
+    .drop-zone:hover .drop-icon {
+      transform: translateY(-2px);
+    }
+    .drop-label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--vscode-editor-foreground);
+    }
+    .drop-hint {
+      font-size: 11px;
+      color: var(--vscode-descriptionForeground);
+    }
+
+    /* Chunk Minimap Strip */
+    .chunk-minimap-container {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background: var(--header-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 2px;
+    }
+    .chunk-minimap-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--vscode-descriptionForeground);
+      font-weight: 600;
+    }
+    .chunk-minimap-track {
+      display: flex;
+      gap: 3px;
+      overflow-x: auto;
+      padding: 3px 1px;
+      height: 22px;
+      align-items: center;
+      border-radius: 3px;
+      scrollbar-width: thin;
+    }
+    .minimap-seg {
+      flex: 1;
+      min-width: 8px;
+      max-width: 24px;
+      height: 12px;
+      background: rgba(128, 128, 128, 0.25);
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .minimap-seg:hover {
+      background: var(--accent-hover);
+      transform: scaleY(1.35);
+    }
+    .minimap-seg.active {
+      background: var(--accent-color);
+      transform: scaleY(1.5);
+      box-shadow: 0 0 6px var(--accent-color);
+    }
+    .minimap-seg.atomic {
+      border-top: 2px solid #73c991;
+    }
+
     /* Chunk Visualizer */
     .chunk-preview-box {
       border: 1px solid var(--border-color);
-      border-radius: 5px;
+      border-radius: 6px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       background: var(--vscode-editor-background);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     }
 
     .chunk-preview-header {
@@ -480,6 +637,14 @@ export function getDashboardHtml(
       line-height: 1.6;
     }
 
+    .chunk-fade-in {
+      animation: chunkFade 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes chunkFade {
+      from { opacity: 0.3; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     mark {
       background-color: rgba(255, 220, 0, 0.35);
       color: inherit;
@@ -487,17 +652,82 @@ export function getDashboardHtml(
       padding: 0 2px;
     }
 
+    /* Headroom Dual-Progress Gauge */
+    .headroom-gauge-container {
+      background: var(--header-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .headroom-gauge-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .headroom-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--vscode-descriptionForeground);
+    }
+    .headroom-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .headroom-bar-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .headroom-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--vscode-editor-foreground);
+    }
+    .headroom-progress-track {
+      height: 6px;
+      background: rgba(128, 128, 128, 0.18);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .headroom-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #73c991;
+      border-radius: 3px;
+      transition: width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s ease;
+    }
+
     /* Retrieval Simulator */
     .retrieval-card {
       border: 1px solid var(--border-color);
-      border-radius: 5px;
+      border-radius: 6px;
       padding: 10px 14px;
       background: var(--header-bg);
       display: flex;
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
+      animation: cascadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) backwards;
       transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes cascadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     .retrieval-card:hover {
@@ -686,8 +916,20 @@ export function getDashboardHtml(
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <div class="form-label">Or Paste Document Text Below:</div>
-          <textarea id="doc-text-input" placeholder="Paste document content here or choose a file above to inspect characters, words, and estimated tokens..."></textarea>
+          <div class="drop-zone" id="doc-drop-zone" title="Click or drag documents here">
+            <svg class="drop-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="12" y2="12"></line>
+              <line x1="15" y1="15" x2="12" y2="12"></line>
+            </svg>
+            <div class="drop-label">Drop Document Here to Profile &amp; Chunk</div>
+            <div class="drop-hint">Supports PDF, Markdown, Plain Text, JSON, and CSV (or click to browse)</div>
+          </div>
+
+          <div class="form-label">Or Paste Document Text Directly:</div>
+          <textarea id="doc-text-input" placeholder="Paste document content here or drop a file above to inspect characters, words, and estimated tokens..."></textarea>
           <div style="display: flex; justify-content: flex-end; gap: 8px;">
             <button class="btn btn-secondary" id="btn-analyze-custom-text">Analyze Text</button>
             <button class="btn" id="btn-send-to-chunking" disabled>Send to Chunking Studio</button>
@@ -842,6 +1084,15 @@ export function getDashboardHtml(
           </div>
         </div>
 
+        <!-- Chunk Minimap Strip -->
+        <div class="chunk-minimap-container" id="chunk-minimap-container" title="Click any block to navigate directly">
+          <div class="chunk-minimap-header">
+            <span>Document Partition Minimap</span>
+            <span id="label-minimap-info">0 Chunks</span>
+          </div>
+          <div class="chunk-minimap-track" id="chunk-minimap-track"></div>
+        </div>
+
         <!-- Chunk Visualizer / Navigator -->
         <div class="chunk-preview-box">
           <div class="chunk-preview-header">
@@ -889,7 +1140,7 @@ export function getDashboardHtml(
         <div class="card" id="retrieval-sim-card" style="margin-top: 8px;">
           <div class="card-header">
             <div class="card-title">Local Retrieval Simulator</div>
-            <span class="badge-pill" id="badge-headroom">Headroom: 100% free</span>
+            <span class="badge-pill" id="badge-sim-status">Lexical Ranker Ready</span>
           </div>
           <div style="font-size: 12px; color: var(--vscode-descriptionForeground);">
             Test how your chunking configuration retrieves context against realistic user queries using local lexical relevance scoring.
@@ -899,6 +1150,28 @@ export function getDashboardHtml(
             <button class="btn" id="btn-run-sim">Retrieve Top Chunks</button>
           </div>
           <div id="sim-results-container" style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;"></div>
+
+          <!-- Dual-Tier Prompt Headroom Gauge -->
+          <div class="headroom-gauge-container" id="headroom-gauge-container">
+            <div class="headroom-gauge-header">
+              <span class="headroom-title">LLM Prompt Headroom Consumption</span>
+              <span class="badge-pill" id="badge-headroom">Top-K Load: 0 tokens</span>
+            </div>
+            <div class="headroom-bars">
+              <div class="headroom-bar-group">
+                <div class="headroom-bar-label"><span>4K Context Window (4,096 tokens)</span><span id="label-headroom-4k">0% (4,096 free)</span></div>
+                <div class="headroom-progress-track">
+                  <div class="headroom-progress-fill" id="fill-headroom-4k" style="width: 0%;"></div>
+                </div>
+              </div>
+              <div class="headroom-bar-group">
+                <div class="headroom-bar-label"><span>8K Context Window (8,192 tokens)</span><span id="label-headroom-8k">0% (8,192 free)</span></div>
+                <div class="headroom-progress-track">
+                  <div class="headroom-progress-fill" id="fill-headroom-8k" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1026,6 +1299,7 @@ export function getDashboardHtml(
     var btnLoadActive = document.getElementById('btn-load-active-editor');
     var btnLoadSample = document.getElementById('btn-load-sample-doc');
     var docTextInput = document.getElementById('doc-text-input');
+    var docDropZone = document.getElementById('doc-drop-zone');
     var btnAnalyzeText = document.getElementById('btn-analyze-custom-text');
     var btnSendToChunking = document.getElementById('btn-send-to-chunking');
     var docAnalysisCard = document.getElementById('doc-analysis-card');
@@ -1095,12 +1369,19 @@ export function getDashboardHtml(
     var btnSaveChunksFile = document.getElementById('btn-save-chunks-file');
     var chunkUtilBar = document.getElementById('chunk-util-bar');
     var chunkOverlapNotice = document.getElementById('chunk-overlap-notice');
+    var chunkMinimapContainer = document.getElementById('chunk-minimap-container');
+    var chunkMinimapTrack = document.getElementById('chunk-minimap-track');
+    var labelMinimapInfo = document.getElementById('label-minimap-info');
 
     // Retrieval Simulator Elements
     var inputSimQuery = document.getElementById('input-sim-query');
     var btnRunSim = document.getElementById('btn-run-sim');
     var simResultsContainer = document.getElementById('sim-results-container');
     var badgeHeadroom = document.getElementById('badge-headroom');
+    var fillHeadroom4k = document.getElementById('fill-headroom-4k');
+    var fillHeadroom8k = document.getElementById('fill-headroom-8k');
+    var labelHeadroom4k = document.getElementById('label-headroom-4k');
+    var labelHeadroom8k = document.getElementById('label-headroom-8k');
 
     // Presets
     document.getElementById('preset-small').addEventListener('click', function() {
@@ -1160,6 +1441,17 @@ export function getDashboardHtml(
 
     function escapeHtmlClient(str) {
       return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function showCopySuccess(btn, originalHtml) {
+      if (!btn) return;
+      var prevHtml = originalHtml || btn.innerHTML;
+      btn.classList.add('btn-copied');
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>Copied!';
+      setTimeout(function() {
+        btn.classList.remove('btn-copied');
+        btn.innerHTML = prevHtml;
+      }, 1800);
     }
 
     // Sync Slider and Number inputs
@@ -1259,6 +1551,49 @@ export function getDashboardHtml(
       vscode.postMessage({ command: 'requestSelectFile' });
     });
 
+    if (docDropZone) {
+      docDropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        docDropZone.classList.add('drag-over');
+      });
+      docDropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        docDropZone.classList.remove('drag-over');
+      });
+      docDropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        docDropZone.classList.remove('drag-over');
+
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          var file = e.dataTransfer.files[0];
+          currentFileName = file.name;
+          var reader = new FileReader();
+          reader.onload = function(evt) {
+            var arrayBuffer = evt.target.result;
+            var bytes = new Uint8Array(arrayBuffer);
+            var binary = '';
+            var len = bytes.byteLength;
+            for (var i = 0; i < len; i++) {
+              binary += String.fromCharCode(bytes[i]);
+            }
+            var base64 = window.btoa(binary);
+            vscode.postMessage({
+              command: 'requestAnalyzeDroppedFile',
+              fileName: file.name,
+              base64: base64
+            });
+          };
+          reader.readAsArrayBuffer(file);
+        }
+      });
+      docDropZone.addEventListener('click', function() {
+        vscode.postMessage({ command: 'requestSelectFile' });
+      });
+    }
+
     btnLoadActive.addEventListener('click', function() {
       vscode.postMessage({ command: 'requestLoadActiveEditor' });
     });
@@ -1323,8 +1658,13 @@ export function getDashboardHtml(
         badgeBreadcrumb.style.display = 'none';
         badgeAtomic.style.display = 'none';
         parentChildToggle.style.display = 'none';
+        if (chunkMinimapContainer) chunkMinimapContainer.style.display = 'none';
         return;
       }
+
+      chunkContentView.classList.remove('chunk-fade-in');
+      void chunkContentView.offsetWidth;
+      chunkContentView.classList.add('chunk-fade-in');
 
       var chunk = currentChunks[currentChunkIndex];
       inputChunkJump.value = currentChunkIndex + 1;
@@ -1413,6 +1753,54 @@ export function getDashboardHtml(
 
       btnPrevChunk.disabled = (currentChunkIndex === 0);
       btnNextChunk.disabled = (currentChunkIndex === currentChunks.length - 1);
+      updateMinimapSelection();
+    }
+
+    function renderMinimap() {
+      if (!chunkMinimapTrack || !currentChunks || currentChunks.length === 0) {
+        if (chunkMinimapContainer) chunkMinimapContainer.style.display = 'none';
+        return;
+      }
+      if (chunkMinimapContainer) chunkMinimapContainer.style.display = 'flex';
+      if (labelMinimapInfo) {
+        labelMinimapInfo.textContent = currentChunks.length + ' Chunks' + (currentChunks.some(function(c) { return c.isAtomic; }) ? ' (Atomic Blocks Preserved)' : '');
+      }
+
+      chunkMinimapTrack.innerHTML = '';
+      for (var i = 0; i < currentChunks.length; i++) {
+        var seg = document.createElement('div');
+        seg.className = 'minimap-seg' + (i === currentChunkIndex ? ' active' : '') + (currentChunks[i].isAtomic ? ' atomic' : '');
+        seg.setAttribute('data-index', i);
+        seg.title = 'Chunk #' + (i + 1) + ' (' + currentChunks[i].characterCount + ' chars' + (currentChunks[i].isAtomic ? ', ' + currentChunks[i].atomicType : '') + ')';
+        chunkMinimapTrack.appendChild(seg);
+      }
+    }
+
+    function updateMinimapSelection() {
+      if (!chunkMinimapTrack) return;
+      var segs = chunkMinimapTrack.querySelectorAll('.minimap-seg');
+      segs.forEach(function(seg) {
+        var idx = parseInt(seg.getAttribute('data-index'), 10);
+        if (idx === currentChunkIndex) {
+          seg.classList.add('active');
+          seg.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        } else {
+          seg.classList.remove('active');
+        }
+      });
+    }
+
+    if (chunkMinimapTrack) {
+      chunkMinimapTrack.addEventListener('click', function(e) {
+        var target = e.target.closest('.minimap-seg');
+        if (target && target.hasAttribute('data-index')) {
+          var idx = parseInt(target.getAttribute('data-index'), 10);
+          if (!isNaN(idx) && idx >= 0 && idx < currentChunks.length) {
+            currentChunkIndex = idx;
+            renderCurrentChunk();
+          }
+        }
+      });
     }
 
     btnPrevChunk.addEventListener('click', function() {
@@ -1439,26 +1827,31 @@ export function getDashboardHtml(
       }
     });
 
+    var searchDebounceTimer = null;
     inputChunkSearch.addEventListener('input', function() {
-      searchQuery = inputChunkSearch.value.trim();
-      if (searchQuery) {
-        var matches = currentChunks.filter(function(c) {
-          return c.content.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1;
-        });
-        searchMatchesPill.textContent = matches.length + ' / ' + currentChunks.length + ' match';
-        if (matches.length > 0 && currentChunks[currentChunkIndex].content.toLowerCase().indexOf(searchQuery.toLowerCase()) === -1) {
-          currentChunkIndex = matches[0].index;
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(function() {
+        searchQuery = inputChunkSearch.value.trim();
+        if (searchQuery) {
+          var matches = currentChunks.filter(function(c) {
+            return c.content.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1;
+          });
+          searchMatchesPill.textContent = matches.length + ' / ' + currentChunks.length + ' match';
+          if (matches.length > 0 && currentChunks[currentChunkIndex].content.toLowerCase().indexOf(searchQuery.toLowerCase()) === -1) {
+            currentChunkIndex = matches[0].index;
+          }
+        } else {
+          searchMatchesPill.textContent = '';
         }
-      } else {
-        searchMatchesPill.textContent = '';
-      }
-      renderCurrentChunk();
+        renderCurrentChunk();
+      }, 120);
     });
 
     btnCopyCurrentChunk.addEventListener('click', function() {
       if (!currentChunks || currentChunks.length === 0) return;
       var chunk = currentChunks[currentChunkIndex];
       vscode.postMessage({ command: 'copy', text: chunk.content, label: 'Chunk #' + (chunk.index + 1) });
+      showCopySuccess(btnCopyCurrentChunk, 'Copy Chunk');
     });
 
     btnCopyAllChunks.addEventListener('click', function() {
@@ -1467,12 +1860,14 @@ export function getDashboardHtml(
         return '--- Chunk #' + (c.index + 1) + ' (' + c.characterCount + ' chars, ~' + c.estimatedTokenCount + ' tokens) ---\\n' + c.content;
       }).join('\\n\\n');
       vscode.postMessage({ command: 'copy', text: allText, label: 'All ' + currentChunks.length + ' Chunks' });
+      showCopySuccess(btnCopyAllChunks, 'Copy All');
     });
 
     btnExportChunksJson.addEventListener('click', function() {
       if (!currentChunks || currentChunks.length === 0) return;
       var jsonStr = JSON.stringify(currentChunks, null, 2);
       vscode.postMessage({ command: 'copy', text: jsonStr, label: 'Chunks JSON' });
+      showCopySuccess(btnExportChunksJson, 'Copy JSON');
     });
 
     btnSaveChunksFile.addEventListener('click', function() {
@@ -1490,6 +1885,10 @@ export function getDashboardHtml(
       var query = (inputSimQuery.value || '').trim();
       if (!query || currentChunks.length === 0) {
         simResultsContainer.innerHTML = '<span style="font-size: 11px; color: var(--vscode-descriptionForeground);">Enter a query above to inspect ranked matching chunks.</span>';
+        if (fillHeadroom4k) fillHeadroom4k.style.width = '0%';
+        if (fillHeadroom8k) fillHeadroom8k.style.width = '0%';
+        if (labelHeadroom4k) labelHeadroom4k.textContent = '0% (4,096 tokens free)';
+        if (labelHeadroom8k) labelHeadroom8k.textContent = '0% (8,192 tokens free)';
         return;
       }
 
@@ -1528,6 +1927,10 @@ export function getDashboardHtml(
       if (topK.length === 0) {
         simResultsContainer.innerHTML = '<div style="font-size: 12px; color: var(--vscode-descriptionForeground);">No relevant chunks matched query terms. Try different keywords.</div>';
         badgeHeadroom.textContent = 'Top-K: 0 tokens';
+        if (fillHeadroom4k) fillHeadroom4k.style.width = '0%';
+        if (fillHeadroom8k) fillHeadroom8k.style.width = '0%';
+        if (labelHeadroom4k) labelHeadroom4k.textContent = '0% (4,096 tokens free)';
+        if (labelHeadroom8k) labelHeadroom8k.textContent = '0% (8,192 tokens free)';
         return;
       }
 
@@ -1545,6 +1948,7 @@ export function getDashboardHtml(
 
         var card = document.createElement('div');
         card.className = 'retrieval-card';
+        card.style.animationDelay = (idx * 60) + 'ms';
         card.title = 'Click to inspect Chunk #' + (item.chunk.index + 1);
 
         var left = document.createElement('div');
@@ -1588,6 +1992,39 @@ export function getDashboardHtml(
       var headroomPct = ((totalTopTokens / 4096) * 100).toFixed(1);
       var headroomLabel = (topK[0] && topK[0].chunk.parentContent) ? 'Parent LLM Context: ~' : 'Top-3 Chunks: ~';
       badgeHeadroom.textContent = headroomLabel + totalTopTokens + ' tokens (' + headroomPct + '% of 4K window)';
+
+      var pct4k = Math.min(100, Math.round((totalTopTokens / 4096) * 100));
+      var free4k = Math.max(0, 4096 - totalTopTokens);
+      var pct8k = Math.min(100, Math.round((totalTopTokens / 8192) * 100));
+      var free8k = Math.max(0, 8192 - totalTopTokens);
+
+      if (fillHeadroom4k) {
+        fillHeadroom4k.style.width = pct4k + '%';
+        if (pct4k > 75) {
+          fillHeadroom4k.style.backgroundColor = 'var(--error-color)';
+        } else if (pct4k > 40) {
+          fillHeadroom4k.style.backgroundColor = 'var(--warning-color)';
+        } else {
+          fillHeadroom4k.style.backgroundColor = '#73c991';
+        }
+      }
+      if (labelHeadroom4k) {
+        labelHeadroom4k.textContent = pct4k + '% (' + free4k.toLocaleString() + ' tokens free)';
+      }
+
+      if (fillHeadroom8k) {
+        fillHeadroom8k.style.width = pct8k + '%';
+        if (pct8k > 75) {
+          fillHeadroom8k.style.backgroundColor = 'var(--error-color)';
+        } else if (pct8k > 40) {
+          fillHeadroom8k.style.backgroundColor = 'var(--warning-color)';
+        } else {
+          fillHeadroom8k.style.backgroundColor = '#73c991';
+        }
+      }
+      if (labelHeadroom8k) {
+        labelHeadroom8k.textContent = pct8k + '% (' + free8k.toLocaleString() + ' tokens free)';
+      }
     }
 
     btnRunSim.addEventListener('click', runRetrievalSimulation);
@@ -1629,6 +2066,7 @@ export function getDashboardHtml(
         });
       }
       vscode.postMessage({ command: 'copy', text: lines.join('\\n'), label: 'Workspace Report' });
+      showCopySuccess(btnCopyWsReport, 'Copy Report');
     });
 
     // Guidelines Buttons
@@ -1708,6 +2146,7 @@ export function getDashboardHtml(
 
       chunkEmptyState.style.display = 'none';
       chunkResultsCard.style.display = 'flex';
+      renderMinimap();
       renderCurrentChunk();
 
       // Reset or trigger simulation with default query

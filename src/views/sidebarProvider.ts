@@ -93,7 +93,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     }
     .hero-card:hover {
       border-color: var(--vscode-focusBorder, rgba(0, 120, 212, 0.5));
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
     .brand-header {
       display: flex;
@@ -177,6 +177,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       background-color: rgba(128, 128, 128, 0.07);
       color: var(--vscode-editor-foreground);
       border: 1px solid var(--border-color);
+      border-left: 2.5px solid transparent;
       padding: 8px 11px;
       text-align: left;
       cursor: pointer;
@@ -185,11 +186,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
+      transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .action-btn:hover {
       background-color: rgba(128, 128, 128, 0.15);
       border-color: var(--vscode-focusBorder, var(--border-color));
+      border-left-color: var(--accent-color);
       transform: translateX(2px);
     }
     .action-btn:active {
